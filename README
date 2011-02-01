@@ -1,18 +1,28 @@
 SMTP PING
+---------
+A simple, portable tool for measuring SMTP server delay, delay variation 
+and throughput.
 
-A simple, portable tool for measuring SMTP server delay, delay variation and throughput.
+COMPILING ON *NIX
+-----------------
+Building on *NIX can be done manually using a C++ compiler such as GNU's 
+'g++' or by using 'cmake'. It could be easily ported to a Makefile.
 
-Build \w *nix:
+	$ cmake .
+	$ make
 
-	Requires cmake, should be quite easily ported to a Makefile
 
-	 cmake .
-	 make
+COMPILING ON MAC OS X
+---------------------
+There is a Makefile you can run using 'make', which will tell you to use
+'cmake' instead. Simply type
+	
+	$ make osx
 
-Build \w Windows:
+to build using Mac OS 10.6.X-optimized settings.
 
-	Project file for Dev-C++ is included, should be quite portable to eg. VS.
+COMPILING ON MICROSOFT WINDOWS
+------------------------------
+A project file for Dev-C++ is included, should be quite portable to eg. VS.
 
-Help:
-
-	Feel free to contact <support@halon.se>
+Feel free to contact <support@halon.se>
