@@ -1,0 +1,18 @@
+SMTP PING
+
+A simple, portable tool for measuring SMTP server delay, delay variation and throughput.
+
+Build \w *nix:
+
+	Requires cmake, should be quite easily ported to a Makefile
+
+	 cmake .
+	 make
+
+Build \w Windows:
+
+	Project file for Dev-C++ is included, should be quite portable to eg. VS.
+
+Help:
+
+	Feel free to contact <support@halon.se>

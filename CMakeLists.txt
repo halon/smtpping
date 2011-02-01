@@ -1,0 +1,14 @@
+PROJECT(smtpping)
+SET(TARGET_NAME "smtpping")
+
+IF("${CMAKE_SYSTEM}" MATCHES "Linux")
+	SET(LIBRESOLV "resolv")
+ENDIF("${CMAKE_SYSTEM}" MATCHES "Linux")
+
+ADD_EXECUTABLE(${TARGET_NAME}
+	smtpping.cpp
+	resolver.cpp
+)
+TARGET_LINK_LIBRARIES(${TARGET_NAME}
+	${LIBRESOLV}
+)
