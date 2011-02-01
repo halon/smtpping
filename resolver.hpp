@@ -25,6 +25,10 @@
 #include <vector>
 #include <stdexcept>
 
+#ifndef MSG_NOSIGNAL
+#define MSG_NOSIGNAL 0
+#endif
+
 #if defined(__APPLE__) or defined(__FreeBSD__)
 #include <netinet/in.h>
 #include <arpa/nameser.h>

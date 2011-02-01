@@ -162,7 +162,6 @@ void usage(const char* name, FILE* fp, int status)
 			"\n"
 			"  " APP_NAME " " APP_VERSION " built on " __DATE__ 
 			" (c) Halon Security <support@halon.se>\n"
-			, name
 			);
 	exit(status);
 }
@@ -372,7 +371,7 @@ int main(int argc, char* argv[])
 	(smtp_##name - smtp_connect)
 
 	/* connect to the first working address */
-	size_t smtp_seq = 0;
+	unsigned int smtp_seq = 0;
 	vector<string>::const_iterator i;
 	for(i = address.begin(); i != address.end(); i++)
 	{
@@ -389,7 +388,8 @@ int main(int argc, char* argv[])
 
 		/* print header */
 		printf("PING %s ([%s]:%s): %d bytes (SMTP DATA)\n", 
-			smtp_rcpt, i->c_str(), smtp_port, message.size());	
+			smtp_rcpt, i->c_str(), smtp_port, 
+			(unsigned int)message.size());	
 reconnect:
 
 		/* abort by ctrl+c or if smtp_seq is done */
@@ -415,7 +415,8 @@ reconnect:
 		int s = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
 		if (!s)
 		{
-			fprintf(stderr, "seq=%u: socket() failed\n", smtp_seq);
+			fprintf(stderr, "seq=%u: socket() failed\n", 
+				smtp_seq);
 			if (smtp_seq == 0) {
 				freeaddrinfo(res);
 				continue;
@@ -467,7 +468,7 @@ reconnect:
 		 * < 250 OK
 		 */
 		cmd = string("HELO ") + smtp_helo + "\r\n";
-		if (send(s, cmd.c_str(), cmd.size(), 0) != cmd.size())
+		if (send(s, cmd.c_str(), cmd.size(), 0) != (int)cmd.size())
 		{
 			fprintf(stderr, "seq=%u: send() HELO failed\n", smtp_seq);
 			close(s);
@@ -486,7 +487,7 @@ reconnect:
 		 * < 250 OK
 		 */
 		cmd = string("MAIL FROM: <") + smtp_from + ">\r\n";
-		if (send(s, cmd.c_str(), cmd.size(), 0) != cmd.size())
+		if (send(s, cmd.c_str(), cmd.size(), 0) != (int)cmd.size())
 		{
 			fprintf(stderr, "seq=%u: send() MAIL FROM: <%s> failed\n", smtp_seq, smtp_from);
 			close(s);
@@ -505,7 +506,7 @@ reconnect:
 		 * < 250 OK
 		 */
 		cmd = string("RCPT TO: <") + smtp_rcpt + ">\r\n";
-		if (send(s, cmd.c_str(), cmd.size(), 0) != cmd.size())
+		if (send(s, cmd.c_str(), cmd.size(), 0) != (int)cmd.size())
 		{
 			fprintf(stderr, "seq=%u: send() RCPT TO: <%s> failed\n", smtp_seq, smtp_rcpt);
 			close(s);
@@ -524,7 +525,7 @@ reconnect:
 		 * < 354 Feed me
 		 */
 		cmd = string("DATA\r\n");
-		if (send(s, cmd.c_str(), cmd.size(), 0) != cmd.size())
+		if (send(s, cmd.c_str(), cmd.size(), 0) != (int)cmd.size())
 		{
 			fprintf(stderr, "seq=%u: send() DATA failed\n", smtp_seq);
 			close(s);
@@ -542,7 +543,7 @@ reconnect:
 		 * > ...message..
 		 * < ??? Mkay
 		 */
-		if (send(s, message.c_str(), message.size(), 0) != message.size())
+		if (send(s, message.c_str(), message.size(), 0) != (int)message.size())
 		{
 			fprintf(stderr, "seq=%u: send() MAIL DATA failed\n", smtp_seq);
 			close(s);
@@ -561,7 +562,7 @@ reconnect:
 		 * < ??? Mkay
 		 */
 		cmd = string("QUIT\r\n");
-		if (send(s, cmd.c_str(), cmd.size(), 0) != cmd.size())
+		if (send(s, cmd.c_str(), cmd.size(), 0) != (int)cmd.size())
 		{
 			fprintf(stderr, "seq=%u: send() QUIT failed\n", smtp_seq);
 			close(s);
