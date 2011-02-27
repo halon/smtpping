@@ -2,19 +2,19 @@
 	SMTP PING
 	Copyright (C) 2011 Halon Security <support@halon.se>
 
-	This program is free software; you can redistribute it and/or
-	modify it under the terms of the GNU General Public License
-	as published by the Free Software Foundation; either version 2
-	of the License, or (at your option) any later version.
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
 
-	This program is distributed in the hope that it will be useful,
-	but WITHOUT ANY WARRANTY; without even the implied warranty of
-	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-	GNU General Public License for more details.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
-	You should have received a copy of the GNU General Public License
-	along with this program; if not, write to the Free Software
-	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 */
 
@@ -79,7 +79,7 @@ bool SMTPReadLine(int s, std::string& ret)
 		if (buf[0] == '\n')
 		{
 			if (debug)
-				fprintf(stderr, "info: response %s", cmd.c_str());
+				fprintf(stderr, "response %s", cmd.c_str());
 			/* support multi-line responses */
 			if (cmd.size() > 4 && cmd[3] == ' ')
 			{
@@ -141,28 +141,28 @@ double GetHighResTime()
 void usage(const char* name, FILE* fp, int status)
 {
 	fprintf(fp, 
-			"Usage: " APP_NAME " [ARGS] x@y.z [@server]\n"
-			"Where: x@y.z  is the address that will receive e-mail\n"
-			"       server is the address to connect to (optional)\n"
-			"       ARGS   is one or many of: (optional)\n"
-			"       -h, --help\tShow this help message\n"
-			"       -d, --debug\tShow more debugging\n"
-			"       -p, --port\tWhich TCP port to use [default: 25]\n"
-			"       -w, --wait\tTime to wait between PINGs [default: 1000]"
-							" (ms)\n"
-			"       -c, --count\tNumber on messages [default: unlimited]\n"
-			"       -s, --size\tMessage size in kilobytes [default: 10]"
-							" (kb)\n"
-			"       -H, --helo\tHELO message [default: example.org]\n"
-			"       -S, --sender\tSender address [default: empty]\n"
-			"\n"
-			"  If no @server is specified, " APP_NAME " will try to find "
-			"the recipient domain's\n  MX record, falling back on A/AAAA "
-			"records.\n"
-			"\n"
-			"  " APP_NAME " " APP_VERSION " built on " __DATE__ 
-			" (c) Halon Security <support@halon.se>\n"
-			);
+		"Usage: " APP_NAME " [ARGS] x@y.z [@server]\n"
+		"Where: x@y.z  is the address that will receive e-mail\n"
+		"       server is the address to connect to (optional)\n"
+		"       ARGS   is one or many of: (optional)\n"
+		"       -h, --help\tShow this help message\n"
+		"       -d, --debug\tShow more debugging\n"
+		"       -p, --port\tWhich TCP port to use [default: 25]\n"
+		"       -w, --wait\tTime to wait between PINGs [default: 1000]"
+						" (ms)\n"
+		"       -c, --count\tNumber on messages [default: unlimited]\n"
+		"       -s, --size\tMessage size in kilobytes [default: 10]"
+						" (kb)\n"
+		"       -H, --helo\tHELO message [default: example.org]\n"
+		"       -S, --sender\tSender address [default: empty]\n"
+		"\n"
+		"  If no @server is specified, " APP_NAME " will try to find "
+		"the recipient domain's\n  MX record, falling back on A/AAAA "
+		"records.\n"
+		"\n"
+		"  " APP_NAME " " APP_VERSION " built on " __DATE__ 
+		" (c) Halon Security <support@halon.se>\n"
+		);
 	exit(status);
 }
 
@@ -192,14 +192,14 @@ int main(int argc, char* argv[])
 
 	/* getopts/longopts */
 	static struct option longopts[] = { 
-		{ "help",		no_argument,		0x0,		'h'	},
-		{ "helo",		required_argument,	0x0,		'H'	},
-		{ "sender",		required_argument,	0x0,		'S'	},
-		{ "count",		required_argument,	0x0,		'c'	},
-		{ "wait",		required_argument,	0x0,		'w'	},
-		{ "size",		required_argument,	0x0,		's'	},
-		{ "port",		required_argument,	0x0,		'p'	},
-		{ 0x0,			0,					0x0,		0	}
+		{ "help",	no_argument,		0x0,	'h'	},
+		{ "helo",	required_argument,	0x0,	'H'	},
+		{ "sender",	required_argument,	0x0,	'S'	},
+		{ "count",	required_argument,	0x0,	'c'	},
+		{ "wait",	required_argument,	0x0,	'w'	},
+		{ "size",	required_argument,	0x0,	's'	},
+		{ "port",	required_argument,	0x0,	'p'	},
+		{ 0x0,		0,			0x0,	0	}
 	}; 
 	opterr = 0;
 	optind = 0;
@@ -249,16 +249,17 @@ int main(int argc, char* argv[])
 	smtp_rcpt = argv[0];
 
 	/* generate message with approximatly size */
-	string message;
-	message += "Subject: SMTP Ping\r\n";
-	message += string("From: <") + smtp_from + ">\r\n";
-	message += string("To: <") + smtp_rcpt + ">\r\n";
-	message += "\r\n";
-	while (message.size() / 1024 < smtp_data_size)
+	string data;
+	data += "Subject: SMTP Ping\r\n";
+	data += string("From: <") + smtp_from + ">\r\n";
+	data += string("To: <") + smtp_rcpt + ">\r\n";
+	data += "\r\n";
+	while (data.size() / 1024 < smtp_data_size)
 	{
-		message += "0123456789012345678900123456743925843285743928570123123123138912378913789\r\n";
+		data += "012345678901234567890012345674392584328574392857"
+			"0123123123138912378913789\r\n";
 	}
-	message += "\r\n.\r\n";
+	data += "\r\n.\r\n";
 
 	Resolver resolv;
 	vector<string> address;
@@ -299,29 +300,32 @@ int main(int argc, char* argv[])
 		vector<string> mx;
 		if (!resolv.Lookup(domain, Resolver::RR_MX, mx))
 		{
-			/* if dns failed, we should not try A/AAAA, 
+			/* if dns failed, we should not try A/AAAA,
 			   only if no data is returned */
-			fprintf(stderr, "warning: failed to resolve %s\n", domain);
+			fprintf(stderr, "failed to resolve %s\n", domain);
 		} else
 		{
 			/* no data, try A/AAAAA */
 			if (mx.empty())
 			{
-				if (debug) fprintf(stderr, "warning: no mx, failling "
-					"back on A/AAAA record for %s\n", domain);
+				if (debug) fprintf(stderr, " no mx, failling "
+					"back on A/AAAA record for %s\n",
+					domain);
 
-				if (!resolv.Lookup(domain, Resolver::RR_A, address))
-					if (debug) fprintf(stderr, "warning: failed to "
+				if (!resolv.Lookup(domain, Resolver::RR_A,
+					address))
+					if (debug) fprintf(stderr, "failed to "
 						"resolve A for %s\n", domain);
-				if (!resolv.Lookup(domain, Resolver::RR_AAAA, address))
-					if (debug) fprintf(stderr, "warning: failed to "
-						"resolve AAAA for %s\n", domain);
+				if (!resolv.Lookup(domain, Resolver::RR_AAAA,
+					address))
+					if (debug) fprintf(stderr, "failed to "
+						"resolve AAAA for %s\n",
+						domain);
 			} else
 			{
 				/* resolve all mx */
 				bool ok;
-				for(
-						vector<string>::const_iterator i = mx.begin(); 
+				for(vector<string>::const_iterator i = mx.begin(); 
 						i != mx.end(); 
 						i++
 					)
@@ -348,7 +352,8 @@ int main(int argc, char* argv[])
 
 	/* register statistics */
 #define STATS_GLOB(name) \
-	double smtp_##name##_min = -1, smtp_##name##_max = -1, smtp_##name##_sum = 0 , smtp_##name##_num = 0;
+	double smtp_##name##_min = -1, smtp_##name##_max = -1,\
+	smtp_##name##_sum = 0 , smtp_##name##_num = 0;
 
 	STATS_GLOB(connect);
 	STATS_GLOB(banner);
@@ -361,8 +366,12 @@ int main(int argc, char* argv[])
 
 #define STATS(name, min) \
 	double smtp_##name = GetHighResTime();\
-	if (smtp_##name - smtp_##min < smtp_##name##_min || smtp_##name##_min == -1) smtp_##name##_min = smtp_##name - smtp_##min;\
-	if (smtp_##name - smtp_##min > smtp_##name##_max || smtp_##name##_max == -1) smtp_##name##_max = smtp_##name - smtp_##min;\
+	if (smtp_##name - smtp_##min < smtp_##name##_min ||\
+	smtp_##name##_min == -1)\
+	smtp_##name##_min = smtp_##name - smtp_##min;\
+	if (smtp_##name - smtp_##min > smtp_##name##_max ||\
+	smtp_##name##_max == -1)\
+	smtp_##name##_max = smtp_##name - smtp_##min;\
 	smtp_##name##_sum += smtp_##name - smtp_##min; smtp_##name##_num++;
 
 #define STATS_TIME(name) \
@@ -382,14 +391,15 @@ int main(int argc, char* argv[])
 		resTmp.ai_socktype = SOCK_STREAM;
 		if (getaddrinfo(i->c_str(), smtp_port, &resTmp, &res) != 0)
 		{
-			fprintf(stderr, "getaddrinfo() failed %s\n", i->c_str());
+			fprintf(stderr, "getaddrinfo() failed %s\n",
+				i->c_str());
 			continue;
 		}
 
 		/* print header */
 		printf("PING %s ([%s]:%s): %d bytes (SMTP DATA)\n", 
 			smtp_rcpt, i->c_str(), smtp_port, 
-			(unsigned int)message.size());	
+			(unsigned int)data.size());
 reconnect:
 
 		/* abort by ctrl+c or if smtp_seq is done */
@@ -412,7 +422,8 @@ reconnect:
 		if (smtp_seq > 0)
 			smtp_seq++;
 
-		int s = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
+		int s = socket(res->ai_family, res->ai_socktype,
+			res->ai_protocol);
 		if (!s)
 		{
 			fprintf(stderr, "seq=%u: socket() failed\n", 
@@ -457,7 +468,8 @@ reconnect:
 		string ret, cmd;
 		if (!SMTPReadLine(s, ret) || ret != "220")
 		{
-			fprintf(stderr, "seq=%u: recv() BANNER failed (%s)\n", smtp_seq, ret.c_str());
+			fprintf(stderr, "seq=%u: recv: BANNER failed (%s)\n",
+				smtp_seq, ret.c_str());
 			close(s);
 			goto reconnect; 
 		}
@@ -470,13 +482,14 @@ reconnect:
 		cmd = string("HELO ") + smtp_helo + "\r\n";
 		if (send(s, cmd.c_str(), cmd.size(), 0) != (int)cmd.size())
 		{
-			fprintf(stderr, "seq=%u: send() HELO failed\n", smtp_seq);
+			fprintf(stderr, "seq=%u: send: failed\n", smtp_seq);
 			close(s);
 			goto reconnect; 
 		}
 		if (!SMTPReadLine(s, ret) || ret != "250")
 		{
-			fprintf(stderr, "seq=%u: recv() HELO failed (%s)\n", smtp_seq, ret.c_str());
+			fprintf(stderr, "seq=%u: recv: HELO failed (%s)\n",
+				smtp_seq, ret.c_str());
 			close(s);
 			goto reconnect; 
 		}
@@ -489,13 +502,14 @@ reconnect:
 		cmd = string("MAIL FROM: <") + smtp_from + ">\r\n";
 		if (send(s, cmd.c_str(), cmd.size(), 0) != (int)cmd.size())
 		{
-			fprintf(stderr, "seq=%u: send() MAIL FROM: <%s> failed\n", smtp_seq, smtp_from);
+			fprintf(stderr, "seq=%u: send: failed\n", smtp_seq);
 			close(s);
 			goto reconnect; 
 		}
 		if (!SMTPReadLine(s, ret) || ret != "250")
 		{
-			fprintf(stderr, "seq=%u: recv() MAIL FROM failed (%s)\n", smtp_seq, ret.c_str());
+			fprintf(stderr, "seq=%u: recv: MAIL FROM failed (%s)\n",
+				smtp_seq, ret.c_str());
 			close(s);
 			goto reconnect; 
 		}
@@ -508,13 +522,14 @@ reconnect:
 		cmd = string("RCPT TO: <") + smtp_rcpt + ">\r\n";
 		if (send(s, cmd.c_str(), cmd.size(), 0) != (int)cmd.size())
 		{
-			fprintf(stderr, "seq=%u: send() RCPT TO: <%s> failed\n", smtp_seq, smtp_rcpt);
+			fprintf(stderr, "seq=%u: send: failed\n", smtp_seq);
 			close(s);
 			goto reconnect; 
 		}
 		if (!SMTPReadLine(s, ret) || ret != "250")
 		{
-			fprintf(stderr, "seq=%u: recv() RCPT TO failed (%s)\n", smtp_seq, ret.c_str());
+			fprintf(stderr, "seq=%u: recv: RCPT TO failed (%s)\n",
+				smtp_seq, ret.c_str());
 			close(s);
 			goto reconnect; 
 		}
@@ -527,31 +542,33 @@ reconnect:
 		cmd = string("DATA\r\n");
 		if (send(s, cmd.c_str(), cmd.size(), 0) != (int)cmd.size())
 		{
-			fprintf(stderr, "seq=%u: send() DATA failed\n", smtp_seq);
+			fprintf(stderr, "seq=%u: send: failed\n", smtp_seq);
 			close(s);
 			goto reconnect; 
 		}
 		if (!SMTPReadLine(s, ret) || ret != "354")
 		{
-			fprintf(stderr, "seq=%u: recv() DATA failed (%s)\n", smtp_seq, ret.c_str());
+			fprintf(stderr, "seq=%u: recv: DATA failed (%s)\n",
+				smtp_seq, ret.c_str());
 			close(s);
 			goto reconnect; 
 		}
 		STATS(data, connect);
 
 		/*
-		 * > ...message..
+		 * > data...
 		 * < ??? Mkay
 		 */
-		if (send(s, message.c_str(), message.size(), 0) != (int)message.size())
+		if (send(s, data.c_str(), data.size(), 0) != (int)data.size())
 		{
-			fprintf(stderr, "seq=%u: send() MAIL DATA failed\n", smtp_seq);
+			fprintf(stderr, "seq=%u: send: failed\n", smtp_seq);
 			close(s);
 			goto reconnect; 
 		}
 		if (!SMTPReadLine(s, ret))
 		{
-			fprintf(stderr, "seq=%u: recv() EOM failed (%s)\n", smtp_seq, ret.c_str());
+			fprintf(stderr, "seq=%u: recv: EOM failed (%s)\n",
+				smtp_seq, ret.c_str());
 			close(s);
 			goto reconnect; 
 		}
@@ -564,13 +581,15 @@ reconnect:
 		cmd = string("QUIT\r\n");
 		if (send(s, cmd.c_str(), cmd.size(), 0) != (int)cmd.size())
 		{
-			fprintf(stderr, "seq=%u: send() QUIT failed\n", smtp_seq);
+			fprintf(stderr, "seq=%u: send: QUIT failed\n",
+				smtp_seq);
 			close(s);
 			goto reconnect; 
 		}
 		if (!SMTPReadLine(s, ret))
 		{
-			fprintf(stderr, "seq=%u: recv() QUIT failed (%s)\n", smtp_seq, ret.c_str());
+			fprintf(stderr, "seq=%u: recv: QUIT failed (%s)\n",
+				smtp_seq, ret.c_str());
 			close(s);
 			goto reconnect; 
 		}
@@ -580,7 +599,9 @@ reconnect:
 		close(s);
 
 		/* print statistics */
-		printf("seq=%u, connect=%.2lf ms, helo=%.2lf ms, mailfrom=%.2lf ms, rcptto=%.2lf ms, datasent=%.2lf ms, quit=%.2lf ms\n",
+		printf("seq=%u, connect=%.2lf ms, helo=%.2lf ms,"
+			"mailfrom=%.2lf ms, rcptto=%.2lf ms, datasent=%.2lf ms,"
+			"quit=%.2lf ms\n",
 				smtp_seq,
 				STATS_TIME(connect),
 				STATS_SESSION_TIME(helo),
@@ -602,7 +623,9 @@ reconnect:
 		printf("%d e-mail messages transmitted\n", smtp_seq);
 
 #define SHOWSTAT(x) \
-		printf(#x " min/avg/max = %.2lf/%.2lf/%.2lf ms\n", smtp_##x##_min, smtp_##x##_num>0?smtp_##x##_sum / smtp_##x##_num:0, smtp_##x##_max);
+	printf(#x " min/avg/max = %.2lf/%.2lf/%.2lf ms\n", \
+	smtp_##x##_min, smtp_##x##_num>0?smtp_##x##_sum / smtp_##x##_num:0, \
+	smtp_##x##_max);
 
 		SHOWSTAT(connect);
 		SHOWSTAT(banner);
