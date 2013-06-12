@@ -28,6 +28,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include <string>
 #include <vector>
 #include <stdexcept>
+#include <fstream>
 
 using std::string;
 using std::vector;
@@ -49,7 +50,7 @@ using std::vector;
  */
 bool debug = false;
 
-#define APP_VERSION "1.0"
+#define APP_VERSION "1.1"
 #define APP_NAME "smtpping"
 
 /*
@@ -153,6 +154,7 @@ void usage(const char* name, FILE* fp, int status)
 		"       -c, --count\tNumber on messages [default: unlimited]\n"
 		"       -s, --size\tMessage size in kilobytes [default: 10]"
 						" (kb)\n"
+		"       -f, --file\tSend message file (raw)\n"
 		"       -H, --helo\tHELO message [default: example.org]\n"
 		"       -S, --sender\tSender address [default: empty]\n"
 		"\n"
@@ -182,6 +184,7 @@ int main(int argc, char* argv[])
 	const char *smtp_from = "";
 	const char *smtp_port = "25";
 	const char *smtp_rcpt = NULL;
+	const char *smtp_file = NULL;
 	unsigned int smtp_probes = 0;
 	unsigned int smtp_probe_wait = 1000;
 	unsigned int smtp_data_size = 10;
@@ -199,12 +202,13 @@ int main(int argc, char* argv[])
 		{ "wait",	required_argument,	0x0,	'w'	},
 		{ "size",	required_argument,	0x0,	's'	},
 		{ "port",	required_argument,	0x0,	'p'	},
+		{ "file",	required_argument,	0x0,	'f'	},
 		{ 0x0,		0,			0x0,	0	}
 	}; 
 	opterr = 0;
 	optind = 0;
 	int ch;
-	while ( (ch = getopt_long(argc, argv, "H:S:s:hw:c:p:d", longopts, 0x0)
+	while ( (ch = getopt_long(argc, argv, "H:S:s:hw:c:p:df:", longopts, 0x0)
 			) != -1)
 	{
 		switch(ch)
@@ -233,6 +237,9 @@ int main(int argc, char* argv[])
 			case 'd':
 				debug = true;
 				break;
+			case 'f':
+				smtp_file = optarg;
+				break;
 			default:
 				usage(argv[0], stderr, 2);
 				break;
@@ -248,8 +255,19 @@ int main(int argc, char* argv[])
 	/* mail address */
 	smtp_rcpt = argv[0];
 
-	/* generate message with approximatly size */
 	string data;
+	if (smtp_file) {
+	/* read smtp_file */
+	std::ifstream ifs(smtp_file, std::ios::in | std::ios::binary);
+	if (!ifs.good())
+		fprintf(stderr, "warning: file %s could not be opened\n"
+				, smtp_file);
+	else
+		data.append(std::istreambuf_iterator<char>(ifs.rdbuf()), 
+				std::istreambuf_iterator<char>());
+	data += ".\r\n";
+	} else {
+	/* generate message with approximatly size */
 	data += "Subject: SMTP Ping\r\n";
 	data += string("From: <") + smtp_from + ">\r\n";
 	data += string("To: <") + smtp_rcpt + ">\r\n";
@@ -260,6 +278,7 @@ int main(int argc, char* argv[])
 			"0123123123138912378913789\r\n";
 	}
 	data += "\r\n.\r\n";
+	}
 
 	Resolver resolv;
 	vector<string> address;
@@ -599,8 +618,8 @@ reconnect:
 		close(s);
 
 		/* print statistics */
-		printf("seq=%u, connect=%.2lf ms, helo=%.2lf ms,"
-			"mailfrom=%.2lf ms, rcptto=%.2lf ms, datasent=%.2lf ms,"
+		printf("seq=%u, connect=%.2lf ms, helo=%.2lf ms, "
+			"mailfrom=%.2lf ms, rcptto=%.2lf ms, datasent=%.2lf ms, "
 			"quit=%.2lf ms\n",
 				smtp_seq,
 				STATS_TIME(connect),
