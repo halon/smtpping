@@ -155,7 +155,7 @@ void usage(const char* name, FILE* fp, int status)
 		"       -s, --size\tMessage size in kilobytes [default: 10]"
 						" (kb)\n"
 		"       -f, --file\tSend message file (raw)\n"
-		"       -H, --helo\tHELO message [default: example.org]\n"
+		"       -H, --helo\tHELO message [default: example.com]\n"
 		"       -S, --sender\tSender address [default: empty]\n"
 		"\n"
 		"  If no @server is specified, " APP_NAME " will try to find "
@@ -180,7 +180,7 @@ int main(int argc, char* argv[])
 #endif
 
 	/* default pareamters */
-	const char *smtp_helo = "example.org";
+	const char *smtp_helo = "example.com";
 	const char *smtp_from = "";
 	const char *smtp_port = "25";
 	const char *smtp_rcpt = NULL;
@@ -283,7 +283,7 @@ int main(int argc, char* argv[])
 	Resolver resolv;
 	vector<string> address;
 
-	/* erik@example.org @mailserver */
+	/* user@example.com @mailserver */
 	if (argc > 1)
 	{
 		if (argv[1][0] != '@')
@@ -343,13 +343,10 @@ int main(int argc, char* argv[])
 			} else
 			{
 				/* resolve all mx */
-				bool ok;
 				for(vector<string>::const_iterator i = mx.begin(); 
-						i != mx.end(); 
-						i++
-					)
+						i != mx.end(); ++i)
 				{
-					ok = false;
+					bool ok = false;
 					if (!resolv.Lookup(*i, Resolver::RR_A, address))
 						if (debug) fprintf(stderr, "warning: failed "
 							"to resolve A for %s\n", i->c_str());
@@ -401,7 +398,7 @@ int main(int argc, char* argv[])
 	/* connect to the first working address */
 	unsigned int smtp_seq = 0;
 	vector<string>::const_iterator i;
-	for(i = address.begin(); i != address.end(); i++)
+	for(i = address.begin(); i != address.end(); ++i)
 	{
 		struct addrinfo *res = NULL, resTmp;
 
@@ -637,9 +634,8 @@ reconnect:
 	/* if we successfully connected somewhere */
 	if (i != address.end() && smtp_seq > 0)
 	{
-
 		printf("\n--- %s SMTP ping statistics ---\n", i->c_str());
-		printf("%d e-mail messages transmitted\n", smtp_seq);
+		printf("%u e-mail messages transmitted\n", smtp_seq);
 
 #define SHOWSTAT(x) \
 	printf(#x " min/avg/max = %.2lf/%.2lf/%.2lf ms\n", \

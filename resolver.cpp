@@ -246,7 +246,7 @@ bool Resolver::Lookup(const std::string& domain, RecordType recordType, std::vec
 
 	// merge map
 	std::map<unsigned int, std::vector<std::string> >::iterator i;
-	for(i = prioMap.begin(); i != prioMap.end(); i++)
+	for(i = prioMap.begin(); i != prioMap.end(); ++i)
 	{
 		std::sort(i->second.begin(), i->second.end());
 		result.insert(result.end(), i->second.begin(), i->second.end());
