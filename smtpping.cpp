@@ -153,9 +153,9 @@ void usage(const char* name, FILE* fp, int status)
 						" (ms)\n"
 		"       -c, --count\tNumber on messages [default: unlimited]\n"
 		"       -s, --size\tMessage size in kilobytes [default: 10]"
-						" (kb)\n"
-		"       -f, --file\tSend message file (raw)\n"
-		"       -H, --helo\tHELO message [default: example.com]\n"
+						" (KiB)\n"
+		"       -f, --file\tSend message file (RFC 822)\n"
+		"       -H, --helo\tHELO domain [default: example.com]\n"
 		"       -S, --sender\tSender address [default: empty]\n"
 		"\n"
 		"  If no @server is specified, " APP_NAME " will try to find "
@@ -273,10 +273,8 @@ int main(int argc, char* argv[])
 	data += string("To: <") + smtp_rcpt + ">\r\n";
 	data += "\r\n";
 	while (data.size() / 1024 < smtp_data_size)
-	{
-		data += "012345678901234567890012345674392584328574392857"
-			"0123123123138912378913789\r\n";
-	}
+		data += "AABBCCDDEEFFGGHHIIJJKKLLMMNNOOPPQQRRSSTTUUVVWWXXYYZZ"
+				"00112233445566778899\r\n";
 	data += "\r\n.\r\n";
 	}
 
