@@ -1,5 +1,7 @@
+.PHONY: all osx clean
+
 C = g++
-F = -c -Wall -DBIND_8_COMPAT 
+F = -c -Wall -DBIND_8_COMPAT
 H = resolver.hpp
 L = -lresolv
 T = smtpping
@@ -18,5 +20,6 @@ smtpping.o: smtpping.cpp
 
 resolver.o: resolver.cpp
 	$C $F -o $@ $^
+
 clean:
 	rm $T smtpping.o resolver.o 
