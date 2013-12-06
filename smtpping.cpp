@@ -40,6 +40,8 @@ using std::vector;
 #else
 #include <sys/socket.h>
 #include <netdb.h>
+#include <sys/wait.h>
+#include <errno.h>
 #endif
 
 /* DNS Resolver */
@@ -371,6 +373,10 @@ int main(int argc, char* argv[])
 
 	unsigned int child = 1;
 	if (forks > 1) {
+#ifdef __WIN32__
+		fprintf(stderr, "-P is not supported on this platform\n");
+		return 1;
+#else
 		pid_t pid;
 		for (; child <= forks; ++child) {
 			pid = fork();
@@ -383,6 +389,7 @@ int main(int argc, char* argv[])
 			}
 		}
 		return 0;
+#endif
 	}
 	spawn:
 
