@@ -11,7 +11,6 @@ Building on *NIX can be done manually using a C++ compiler such as GNU's
 	$ cmake .
 	$ make
 
-
 COMPILING ON MAC OS X
 ---------------------
 There is a Makefile you can run using 'make', which will tell you to use
@@ -19,7 +18,7 @@ There is a Makefile you can run using 'make', which will tell you to use
 	
 	$ make osx
 
-to build using Mac OS 10.6.X-optimized settings.
+to build using Mac OSX-optimized settings.
 
 COMPILING ON MICROSOFT WINDOWS
 ------------------------------
