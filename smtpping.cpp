@@ -152,6 +152,7 @@ void usage(const char* name, FILE* fp, int status)
 		"       -w, --wait\tTime to wait between PINGs [default: 1000]"
 						" (ms)\n"
 		"       -c, --count\tNumber on messages [default: unlimited]\n"
+		"       -P, --parallel\tNumber of parallel workers [default: 1]\n"
 		"       -s, --size\tMessage size in kilobytes [default: 10]"
 						" (KiB)\n"
 		"       -f, --file\tSend message file (RFC 822)\n"
@@ -188,6 +189,7 @@ int main(int argc, char* argv[])
 	unsigned int smtp_probes = 0;
 	unsigned int smtp_probe_wait = 1000;
 	unsigned int smtp_data_size = 10;
+	unsigned int forks = 0;
 
 	/* no arguments: show help */
 	if (argc < 2)
@@ -200,6 +202,7 @@ int main(int argc, char* argv[])
 		{ "sender",	required_argument,	0x0,	'S'	},
 		{ "count",	required_argument,	0x0,	'c'	},
 		{ "wait",	required_argument,	0x0,	'w'	},
+		{ "parallel",	required_argument,	0x0,	'P'	},
 		{ "size",	required_argument,	0x0,	's'	},
 		{ "port",	required_argument,	0x0,	'p'	},
 		{ "file",	required_argument,	0x0,	'f'	},
@@ -208,8 +211,7 @@ int main(int argc, char* argv[])
 	opterr = 0;
 	optind = 0;
 	int ch;
-	while ( (ch = getopt_long(argc, argv, "H:S:s:hw:c:p:df:", longopts, 0x0)
-			) != -1)
+	while ((ch = getopt_long(argc, argv, "H:S:s:hw:c:P:p:df:", longopts, 0x0)) != -1)
 	{
 		switch(ch)
 		{
@@ -233,6 +235,9 @@ int main(int argc, char* argv[])
 				break;
 			case 'p':
 				smtp_port = optarg;
+				break;
+			case 'P':
+				forks = strtoul(optarg, NULL, 10);
 				break;
 			case 'd':
 				debug = true;
@@ -363,6 +368,23 @@ int main(int argc, char* argv[])
 			}
 		}
 	}
+
+	unsigned int child = 1;
+	if (forks > 1) {
+		pid_t pid;
+		for (; child <= forks; ++child) {
+			pid = fork();
+			if (pid == 0)
+				goto spawn;
+		}
+		while (pid = waitpid(-1, NULL, 0)) {
+			if (errno == ECHILD) {
+				break;
+			}
+		}
+		return 0;
+	}
+	spawn:
 
 	/* register statistics */
 #define STATS_GLOB(name) \
@@ -630,7 +652,9 @@ reconnect:
 	}
 
 	/* if we successfully connected somewhere */
-	if (i != address.end() && smtp_seq > 0)
+	if (forks > 1)
+		;
+	else if (i != address.end() && smtp_seq > 0)
 	{
 		printf("\n--- %s SMTP ping statistics ---\n", i->c_str());
 		printf("%u e-mail messages transmitted\n", smtp_seq);
