@@ -257,7 +257,7 @@ int main(int argc, char* argv[])
 				break;
 			case 'r':
 				show_rate = true;
-				debug = true;
+				quiet = true;
 				break;
 			case 'q':
 				quiet = true;
