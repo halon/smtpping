@@ -42,6 +42,11 @@ using std::vector;
 #include <netdb.h>
 #include <sys/wait.h>
 #include <errno.h>
+#include <semaphore.h>
+#include <sys/mman.h>
+#if _POSIX_SEMAPHORES && MAP_ANONYMOUS
+#define SUPPORT_RATE
+#endif
 #endif
 
 /* DNS Resolver */
@@ -160,6 +165,8 @@ void usage(const char* name, FILE* fp, int status)
 		"       -f, --file\tSend message file (RFC 822)\n"
 		"       -H, --helo\tHELO domain [default: example.com]\n"
 		"       -S, --sender\tSender address [default: empty]\n"
+		"       -r, --rate\tShow message rate per second\n"
+		"       -q, --quiet\tShow less output\n"
 		"\n"
 		"  If no @server is specified, " APP_NAME " will try to find "
 		"the recipient domain's\n  MX record, falling back on A/AAAA "
@@ -192,6 +199,8 @@ int main(int argc, char* argv[])
 	unsigned int smtp_probe_wait = 1000;
 	unsigned int smtp_data_size = 10;
 	unsigned int forks = 0;
+	bool show_rate = false;
+	bool quiet = false;
 
 	/* no arguments: show help */
 	if (argc < 2)
@@ -208,12 +217,14 @@ int main(int argc, char* argv[])
 		{ "size",	required_argument,	0x0,	's'	},
 		{ "port",	required_argument,	0x0,	'p'	},
 		{ "file",	required_argument,	0x0,	'f'	},
+		{ "rate",	required_argument,	0x0,	'r'	},
+		{ "quite",	required_argument,	0x0,	'q'	},
 		{ 0x0,		0,			0x0,	0	}
 	}; 
 	opterr = 0;
 	optind = 0;
 	int ch;
-	while ((ch = getopt_long(argc, argv, "H:S:s:hw:c:P:p:df:", longopts, 0x0)) != -1)
+	while ((ch = getopt_long(argc, argv, "H:S:s:hw:c:P:p:df:rq", longopts, 0x0)) != -1)
 	{
 		switch(ch)
 		{
@@ -243,6 +254,12 @@ int main(int argc, char* argv[])
 				break;
 			case 'd':
 				debug = true;
+				break;
+			case 'r':
+				show_rate = true;
+				break;
+			case 'q':
+				quiet = true;
 				break;
 			case 'f':
 				smtp_file = optarg;
@@ -371,6 +388,19 @@ int main(int argc, char* argv[])
 		}
 	}
 
+#ifdef SUPPORT_RATE
+	sem_t* sem = (sem_t*)mmap(NULL, sizeof(sem_t), PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+	if (sem_init(sem, 1, 1) != 0)
+		fprintf(stderr, "sem_init: failed\n");
+	size_t* counter = (size_t*)mmap(NULL, sizeof(size_t), PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+	*counter = 0;
+#else
+	if (show_rate) {
+		fprintf(stderr, "-r is not supported on this platform\n");
+		return 1;
+	}
+#endif
+
 	unsigned int child = 1;
 	if (forks > 1) {
 #ifdef __WIN32__
@@ -383,7 +413,16 @@ int main(int argc, char* argv[])
 			if (pid == 0)
 				goto spawn;
 		}
-		while (pid = waitpid(-1, NULL, 0)) {
+#ifdef SUPPORT_RATE
+		while (show_rate && !abort_ping) {
+			sem_wait(sem);
+			printf("%d/s\n", *counter);
+			*counter = 0;
+			sem_post(sem);
+			sleep(1);
+		}
+#endif
+		while ((pid = waitpid(-1, NULL, 0))) {
 			if (errno == ECHILD) {
 				break;
 			}
@@ -440,6 +479,7 @@ int main(int argc, char* argv[])
 		}
 
 		/* print header */
+		if (!quiet)
 		printf("PING %s ([%s]:%s): %d bytes (SMTP DATA)\n", 
 			smtp_rcpt, i->c_str(), smtp_port, 
 			(unsigned int)data.size());
@@ -641,7 +681,16 @@ reconnect:
 		shutdown(s, 2);
 		close(s);
 
+#ifdef SUPPORT_RATE
+		if (forks > 1) {
+			sem_wait(sem);
+			(*counter)++;
+			sem_post(sem);
+		}
+#endif
+
 		/* print statistics */
+		if (!quiet)
 		printf("seq=%u, connect=%.2lf ms, helo=%.2lf ms, "
 			"mailfrom=%.2lf ms, rcptto=%.2lf ms, datasent=%.2lf ms, "
 			"quit=%.2lf ms\n",
