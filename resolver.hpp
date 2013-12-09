@@ -25,11 +25,7 @@
 #include <vector>
 #include <stdexcept>
 
-#ifndef MSG_NOSIGNAL
-#define MSG_NOSIGNAL 0
-#endif
-
-#if defined(__APPLE__) or defined(__FreeBSD__)
+#if defined(__APPLE__) or defined(__FreeBSD__) or defined(__linux)
 #include <netinet/in.h>
 #include <arpa/nameser.h>
 #endif
@@ -43,6 +39,10 @@ typedef DNS_STATUS (WINAPI DNSQUERY)(LPCTSTR, WORD, DWORD, PIP4_ARRAY, PDNS_RECO
 typedef DNSQUERY* LPDNSQUERY;
 #else
 #include <resolv.h>
+#endif
+
+#ifndef MSG_NOSIGNAL
+#define MSG_NOSIGNAL 0
 #endif
 
 class Resolver
