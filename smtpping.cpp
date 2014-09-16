@@ -371,15 +371,19 @@ int main(int argc, char* argv[])
 				{
 					bool ok = false;
 					if (!resolv.Lookup(*i, Resolver::RR_A, address))
+					{
 						if (debug) fprintf(stderr, "warning: failed "
 							"to resolve A for %s\n", i->c_str());
 						else
 							ok = true;
+					}
 					if (!resolv.Lookup(*i, Resolver::RR_AAAA, address))
+					{
 						if (debug) fprintf(stderr, "warning: failed to "
 							"resolve AAAA for %s\n", i->c_str());
 						else
 							ok = true;
+					}
 					/* could not reslove as either A or AAAA: 
 					   maybe it's an IP */
 					if (!ok)
