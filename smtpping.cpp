@@ -167,6 +167,7 @@ void usage(const char* name, FILE* fp, int status)
 		"       -S, --sender\tSender address [default: empty]\n"
 		"       -r, --rate\tShow message rate per second\n"
 		"       -q, --quiet\tShow less output\n"
+		"       -J\t\tRun in jailed mode (forbid --file)\n"
 		"\n"
 		"  If no @server is specified, " APP_NAME " will try to find "
 		"the recipient domain's\n  MX record, falling back on A/AAAA "
@@ -201,6 +202,7 @@ int main(int argc, char* argv[])
 	unsigned int forks = 0;
 	bool show_rate = false;
 	bool quiet = false;
+	bool safe_mode = false;
 
 	/* no arguments: show help */
 	if (argc < 2)
@@ -224,7 +226,7 @@ int main(int argc, char* argv[])
 	opterr = 0;
 	optind = 0;
 	int ch;
-	while ((ch = getopt_long(argc, argv, "H:S:s:hw:c:P:p:df:rq", longopts, 0x0)) != -1)
+	while ((ch = getopt_long(argc, argv, "H:S:s:hw:c:P:p:df:rqJ", longopts, 0x0)) != -1)
 	{
 		switch(ch)
 		{
@@ -265,11 +267,17 @@ int main(int argc, char* argv[])
 			case 'f':
 				smtp_file = optarg;
 				break;
+			case 'J':
+				safe_mode = true;
+				break;
 			default:
 				usage(argv[0], stderr, 2);
 				break;
 		}
 	}
+	if (safe_mode && smtp_file)
+		usage(argv[0], stderr, 2);
+
 	argc -= optind;
 	argv += optind;
 
