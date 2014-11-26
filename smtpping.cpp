@@ -163,7 +163,7 @@ void usage(const char* name, FILE* fp, int status)
 		"       -s, --size\tMessage size in kilobytes [default: 10]"
 						" (KiB)\n"
 		"       -f, --file\tSend message file (RFC 822)\n"
-		"       -H, --helo\tHELO domain [default: example.com]\n"
+		"       -H, --helo\tHELO domain [default: localhost.localdomain]\n"
 		"       -S, --sender\tSender address [default: empty]\n"
 		"       -r, --rate\tShow message rate per second\n"
 		"       -q, --quiet\tShow less output\n"
@@ -191,7 +191,7 @@ int main(int argc, char* argv[])
 #endif
 
 	/* default pareamters */
-	const char *smtp_helo = "example.com";
+	const char *smtp_helo = "localhost.localdomain";
 	const char *smtp_from = "";
 	const char *smtp_port = "25";
 	const char *smtp_rcpt = NULL;
