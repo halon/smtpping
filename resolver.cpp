@@ -96,7 +96,7 @@ bool Resolver::Lookup(const std::string& domain, RecordType recordType, std::vec
 	}
 
 	PDNS_RECORD pRec = NULL;
-	if (m_lpfnDnsQuery(domain.c_str(), req_rec_type, DNS_QUERY_STANDARD, 0x0, &pRec, NULL) != ERROR_SUCCESS)
+	if (m_lpfnDnsQuery(domain.c_str(), req_rec_type, DNS_QUERY_STANDARD, NULL, &pRec, NULL) != ERROR_SUCCESS)
 		return false;
 
 	PDNS_RECORD pRecFirst = pRec;

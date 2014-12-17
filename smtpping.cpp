@@ -210,23 +210,23 @@ int main(int argc, char* argv[])
 
 	/* getopts/longopts */
 	static struct option longopts[] = { 
-		{ "help",	no_argument,		0x0,	'h'	},
-		{ "helo",	required_argument,	0x0,	'H'	},
-		{ "sender",	required_argument,	0x0,	'S'	},
-		{ "count",	required_argument,	0x0,	'c'	},
-		{ "wait",	required_argument,	0x0,	'w'	},
-		{ "parallel",	required_argument,	0x0,	'P'	},
-		{ "size",	required_argument,	0x0,	's'	},
-		{ "port",	required_argument,	0x0,	'p'	},
-		{ "file",	required_argument,	0x0,	'f'	},
-		{ "rate",	required_argument,	0x0,	'r'	},
-		{ "quite",	required_argument,	0x0,	'q'	},
-		{ 0x0,		0,			0x0,	0	}
+		{ "help",	no_argument,		NULL,	'h'	},
+		{ "helo",	required_argument,	NULL,	'H'	},
+		{ "sender",	required_argument,	NULL,	'S'	},
+		{ "count",	required_argument,	NULL,	'c'	},
+		{ "wait",	required_argument,	NULL,	'w'	},
+		{ "parallel",	required_argument,	NULL,	'P'	},
+		{ "size",	required_argument,	NULL,	's'	},
+		{ "port",	required_argument,	NULL,	'p'	},
+		{ "file",	required_argument,	NULL,	'f'	},
+		{ "rate",	required_argument,	NULL,	'r'	},
+		{ "quite",	required_argument,	NULL,	'q'	},
+		{ NULL,		0,			NULL,	0	}
 	}; 
 	opterr = 0;
 	optind = 0;
 	int ch;
-	while ((ch = getopt_long(argc, argv, "H:S:s:hw:c:P:p:df:rqJ", longopts, 0x0)) != -1)
+	while ((ch = getopt_long(argc, argv, "H:S:s:hw:c:P:p:df:rqJ", longopts, NULL)) != -1)
 	{
 		switch(ch)
 		{
