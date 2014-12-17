@@ -82,7 +82,7 @@ bool SMTPReadLine(int s, std::string& ret)
 	string cmd;
 	int r;
 	do {
-		r = recv(s, buf, sizeof(buf), MSG_NOSIGNAL);
+		r = recv(s, buf, sizeof buf, MSG_NOSIGNAL);
 		if (r > 0) cmd += buf[0];
 		if (buf[0] == '\n')
 		{
@@ -481,7 +481,7 @@ int main(int argc, char* argv[])
 	{
 		struct addrinfo *res = NULL, resTmp;
 
-		memset(&resTmp, 0, sizeof(struct addrinfo));
+		memset(&resTmp, 0, sizeof resTmp);
 		resTmp.ai_family = AF_UNSPEC;
 		resTmp.ai_socktype = SOCK_STREAM;
 		if (getaddrinfo(i->c_str(), smtp_port, &resTmp, &res) != 0)

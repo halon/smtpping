@@ -49,7 +49,7 @@ Resolver::Resolver()
 		m_lpfnDnsQuery = reinterpret_cast<LPDNSQUERY>(GetProcAddress(m_hDnsInst, "DnsQuery_A"));
 	}
 #else
-	memset((void*)&m_res, '\0', sizeof(m_res));
+	memset((void*)&m_res, 0, sizeof m_res);
 	res_ninit(&m_res);
 #endif
 }
@@ -111,12 +111,12 @@ bool Resolver::Lookup(const std::string& domain, RecordType recordType, std::vec
 			if (pRec->wType == DNS_TYPE_AAAA)
 			{
 				SOCKADDR_IN6 addr;
-				memset(&addr, '\0', sizeof(addr));
+				memset(&addr, 0, sizeof addr);
 				addr.sin6_family = AF_INET6;
 				addr.sin6_addr = *((in_addr6*)&(pRec->Data.AAAA.Ip6Address));
 				char buf[128];
-				DWORD bufsize = sizeof(buf);
-				if (WSAAddressToStringA((sockaddr*)&addr, sizeof(addr), NULL, buf, &bufsize) == 0)
+				DWORD bufsize = sizeof buf;
+				if (WSAAddressToStringA((sockaddr*)&addr, sizeof addr, NULL, buf, &bufsize) == 0)
 				{
 					prioMap[0].push_back(buf);
 				}
@@ -124,12 +124,12 @@ bool Resolver::Lookup(const std::string& domain, RecordType recordType, std::vec
 			if (pRec->wType == DNS_TYPE_A)
 			{
 				SOCKADDR_IN addr;
-				memset(&addr, '\0', sizeof(addr));
+				memset(&addr, 0, sizeof addr);
 				addr.sin_family = AF_INET;
 				addr.sin_addr = *((in_addr*)&(pRec->Data.A.IpAddress));;
 				char buf[128];
-				DWORD bufsize = sizeof(buf);
-				if (WSAAddressToStringA((sockaddr*)&addr, sizeof(addr), NULL, buf, &bufsize) == 0)
+				DWORD bufsize = sizeof buf;
+				if (WSAAddressToStringA((sockaddr*)&addr, sizeof addr, NULL, buf, &bufsize) == 0)
 				{
 					prioMap[0].push_back(buf);
 				}
@@ -139,7 +139,9 @@ bool Resolver::Lookup(const std::string& domain, RecordType recordType, std::vec
 	}
 	m_lpfnDnsRecordListFree(pRecFirst, DnsFreeRecordList);
 #else
-	unsigned char response[PACKETSZ + sizeof(HEADER)];
+	unsigned char response[64 * 1024];
+	memset(response, 0, sizeof response);
+
 	unsigned char *resData, *resEnd;
 	unsigned short rec_len, rec_pref;
 	unsigned short rec_type;
@@ -159,12 +161,15 @@ bool Resolver::Lookup(const std::string& domain, RecordType recordType, std::vec
 			break;
 	}
 
-	int len = res_nquery(&m_res, domain.c_str(), C_IN, req_rec_type, (unsigned char*)&response, sizeof(response));
+	int len = res_nquery(&m_res, domain.c_str(), C_IN, req_rec_type, (unsigned char*)&response, sizeof response);
 	if (len < 0)
 	{
 		if (m_res.res_h_errno == NO_DATA)
 			return true;
 
+		return false;
+	}
+	if (len > sizeof response) {
 		return false;
 	}
 
@@ -184,7 +189,7 @@ bool Resolver::Lookup(const std::string& domain, RecordType recordType, std::vec
 
 	char buf[MAXDNAME + 1];
 	for (int i = 0; i < answer_count; i++) {
-		len = dn_expand((unsigned char*)&response, resEnd, resData, (char*)&buf, sizeof(buf) - 1);
+		len = dn_expand((unsigned char*)&response, resEnd, resData, (char*)&buf, sizeof buf - 1);
 		if (len < 0) 
 			return false;
 
@@ -230,7 +235,7 @@ bool Resolver::Lookup(const std::string& domain, RecordType recordType, std::vec
 				case T_MX:
 					{
 						char buf[MAXDNAME + 1];
-						len = dn_expand((unsigned char*)&response, resEnd, resData, (char*)&buf, sizeof(buf) - 1);
+						len = dn_expand((unsigned char*)&response, resEnd, resData, (char*)&buf, sizeof buf - 1);
 						if (len < 0) 
 							return false;
 
