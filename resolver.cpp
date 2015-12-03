@@ -93,6 +93,8 @@ bool Resolver::Lookup(const std::string& domain, RecordType recordType, std::vec
 		case RR_MX:
 			req_rec_type = DNS_TYPE_MX;
 			break;
+		default:
+			return false;
 	}
 
 	PDNS_RECORD pRec = NULL;
@@ -126,7 +128,7 @@ bool Resolver::Lookup(const std::string& domain, RecordType recordType, std::vec
 				SOCKADDR_IN addr;
 				memset(&addr, 0, sizeof addr);
 				addr.sin_family = AF_INET;
-				addr.sin_addr = *((in_addr*)&(pRec->Data.A.IpAddress));;
+				addr.sin_addr = *((in_addr*)&(pRec->Data.A.IpAddress));
 				char buf[128];
 				DWORD bufsize = sizeof buf;
 				if (WSAAddressToStringA((sockaddr*)&addr, sizeof addr, NULL, buf, &bufsize) == 0)
@@ -169,7 +171,7 @@ bool Resolver::Lookup(const std::string& domain, RecordType recordType, std::vec
 
 		return false;
 	}
-	if (len > sizeof response) {
+	if (len > (int)sizeof response) {
 		return false;
 	}
 
