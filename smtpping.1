@@ -1,0 +1,98 @@
+.\" Copyright (C) 2015 Halon Security <support@halon.se>
+.\"
+.\" This program is free software; you can redistribute it and/or
+.\" modify it under the terms of the GNU General Public License
+.\" as published by the Free Software Foundation; either version 2
+.\" of the License, or (at your option) any later version.
+.\"
+.\" This program is distributed in the hope that it will be useful,
+.\" but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.\" GNU General Public License for more details.
+.\"
+.\" You should have received a copy of the GNU General Public License
+.\" along with this program; if not, write to the Free Software
+.\" Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+.\"
+.Dd $Mdocdate: December 3 2015 $
+.Dt SMTPPING 1
+.Os
+.Sh NAME
+.Nm smtpping
+.Nd SMTP benchmarking and measurement tool
+.Sh SYNOPSIS
+.Nm
+.Op Fl dqrJ
+.Op Fl p Ar port
+.Op Fl w Ar wait
+.Op Fl c Ar count
+.Op Fl P Ar parallell
+.Op Fl s Ar size
+.Op Fl f Ar file
+.Op Fl H Ar hello
+.Op Fl S Ar sender
+.Ar recipient
+.Op Ar @server
+.Sh DESCRIPTION
+.Nm
+is a small tool that performs SMTP server delay, delay variation and
+throughput measurements.
+.Pp
+It must be invoked with the
+.Ar recipient
+email address. Normally, the
+.Ar server
+should also be specified (prefixed with @); otherwise
+.Nm
+will try to find the recipient domain's
+MX record, falling back on A/AAAA records.
+.Pp
+The following options are available:
+.Bl -tag -width Ds
+.It Fl p Ar port
+Specifies the TCP port to use (default: 25).
+.It Fl w Ar wait
+Time in milliseconds to wait between pings (default: 1000).
+.It Fl c Ar count
+Number of pings to send (default: unlimited).
+.It Fl P Ar processes
+Number of parallell worker processes (default: 1). To measure throughput,
+it's recommended to use
+.Fl r
+and
+.Fl w0
+with this option.
+.It Fl s Ar size
+Ping message size in kilobytes (default: 10). Cannot be used in
+conjunction with the
+.Fl f
+option.
+.It Fl f Ar file
+Send the specified email file (message/rfc822) instead of a generated
+message. Cannot be used in conjunction with the
+.Fl s
+option.
+.It Fl H Ar helo
+HELO name (default: localhost.localdomain).
+.It Fl S Ar sender
+Sender address (default: <>).
+.It Fl r
+Display rate instead of transaction delays. To measure throughput,
+it's recommended to use
+.Fl w0
+and possibly
+.Fl P
+with this option.
+.It Fl q
+Display less verbose output.
+.It Fl d
+Display more verbose output.
+.Sh AUTHORS
+.An -nosplit
+The
+.Nm
+program was written by
+.An Anders Berggren Aq Mt anders@desh.se
+and
+.An Erik Lax Aq Mt erik@datahack.se
+for Halon Security AB.

@@ -158,7 +158,7 @@ void usage(const char* name, FILE* fp, int status)
 		"       -p, --port\tWhich TCP port to use [default: 25]\n"
 		"       -w, --wait\tTime to wait between PINGs [default: 1000]"
 						" (ms)\n"
-		"       -c, --count\tNumber on messages [default: unlimited]\n"
+		"       -c, --count\tNumber of messages [default: unlimited]\n"
 		"       -P, --parallel\tNumber of parallel workers [default: 1]\n"
 		"       -s, --size\tMessage size in kilobytes [default: 10]"
 						" (KiB)\n"
@@ -442,6 +442,9 @@ int main(int argc, char* argv[])
 		}
 		return 0;
 #endif
+	} else if (show_rate) {
+		fprintf(stderr, "-r only works with -P2 or greater\n");
+		return 1;
 	}
 	spawn:
 
