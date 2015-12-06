@@ -161,6 +161,8 @@ bool Resolver::Lookup(const std::string& domain, RecordType recordType, std::vec
 		case RR_MX:
 			req_rec_type = T_MX;
 			break;
+		default:
+			return false;
 	}
 
 	int len = res_nquery(&m_res, domain.c_str(), C_IN, req_rec_type, (unsigned char*)&response, sizeof response);
