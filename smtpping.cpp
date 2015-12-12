@@ -220,7 +220,7 @@ int main(int argc, char* argv[])
 		{ "port",	required_argument,	NULL,	'p'	},
 		{ "file",	required_argument,	NULL,	'f'	},
 		{ "rate",	required_argument,	NULL,	'r'	},
-		{ "quite",	required_argument,	NULL,	'q'	},
+		{ "quiet",	required_argument,	NULL,	'q'	},
 		{ NULL,		0,			NULL,	0	}
 	}; 
 	opterr = 0;
