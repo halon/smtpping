@@ -523,7 +523,7 @@ reconnect:
 
 		int s = socket(res->ai_family, res->ai_socktype,
 			res->ai_protocol);
-		if (!s)
+		if (s == -1)
 		{
 			fprintf(stderr, "seq=%u: socket() failed\n", 
 				smtp_seq);
