@@ -1,5 +1,6 @@
-A simple, portable tool for measuring SMTP server delay, delay variation 
-and throughput. Feel free to contact <support@halon.io>
+A simple, portable tool for measuring SMTP server delay, delay variation and throughput. Feel free to contact <support@halon.io>
+
+[![Coverity Scan Build](https://img.shields.io/coverity/scan/7287.svg)](https://scan.coverity.com/projects/halonsecurity-smtpping)
 
 Usage
 -----
