@@ -302,6 +302,7 @@ int main(int argc, char* argv[])
 	} else {
 	/* generate message with approximatly size */
 	data += "Subject: SMTP Ping\r\n";
+	data += "Content-Type: text/plain\r\n";
 	data += string("From: <") + smtp_from + ">\r\n";
 	data += string("To: <") + smtp_rcpt + ">\r\n";
 	data += "\r\n";
