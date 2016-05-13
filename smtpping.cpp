@@ -67,6 +67,7 @@ bool abort_ping = false;
 void abort(int)
 {
 	abort_ping = true;
+	signal(SIGINT, SIG_DFL);
 }
 
 /*
