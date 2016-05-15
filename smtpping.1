@@ -22,7 +22,7 @@
 .Nd SMTP benchmarking and measurement tool
 .Sh SYNOPSIS
 .Nm
-.Op Fl dqrJ
+.Op Fl dqrJ46
 .Op Fl p Ar port
 .Op Fl w Ar wait
 .Op Fl c Ar count
@@ -49,6 +49,10 @@ MX record, falling back on A/AAAA records.
 .Pp
 The following options are available:
 .Bl -tag -width Ds
+.It Fl 4
+Use IPv4.
+.It Fl 6
+Use IPv6.
 .It Fl p Ar port
 Specifies the TCP port to use (default: 25).
 .It Fl w Ar wait

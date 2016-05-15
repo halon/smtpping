@@ -57,7 +57,7 @@ using std::vector;
  */
 bool debug = false;
 
-#define APP_VERSION "1.1.2"
+#define APP_VERSION "1.1.3"
 #define APP_NAME "smtpping"
 
 /*
@@ -156,6 +156,8 @@ void usage(const char* name, FILE* fp, int status)
 		"       ARGS   is one or many of: (optional)\n"
 		"       -h, --help\tShow this help message\n"
 		"       -d, --debug\tShow more debugging\n"
+		"       -4\t\tUse IPv4\n"
+		"       -6\t\tUse IPv6\n"
 		"       -p, --port\tWhich TCP port to use [default: 25]\n"
 		"       -w, --wait\tTime to wait between PINGs [default: 1000]"
 						" (ms)\n"
@@ -204,6 +206,7 @@ int main(int argc, char* argv[])
 	bool show_rate = false;
 	bool quiet = false;
 	bool safe_mode = false;
+	unsigned int proto = AF_UNSPEC;
 
 	/* no arguments: show help */
 	if (argc < 2)
@@ -227,7 +230,7 @@ int main(int argc, char* argv[])
 	opterr = 0;
 	optind = 0;
 	int ch;
-	while ((ch = getopt_long(argc, argv, "H:S:s:hw:c:P:p:df:rqJ", longopts, NULL)) != -1)
+	while ((ch = getopt_long(argc, argv, "H:S:s:hw:c:P:p:df:rqJ46", longopts, NULL)) != -1)
 	{
 		switch(ch)
 		{
@@ -270,6 +273,12 @@ int main(int argc, char* argv[])
 				break;
 			case 'J':
 				safe_mode = true;
+				break;
+			case '4':
+				proto = AF_INET;
+				break;
+			case '6':
+				proto = AF_INET6;
 				break;
 			default:
 				usage(argv[0], stderr, 2);
@@ -326,10 +335,10 @@ int main(int argc, char* argv[])
 		const char* domain = argv[1] + 1;
 
 		/* resolve as A/AAAA */
-		if (!resolv.Lookup(domain, Resolver::RR_A, address))
+		if ((!proto || proto == AF_INET) && !resolv.Lookup(domain, Resolver::RR_A, address))
 			if (debug) fprintf(stderr, "warning: failed to resolve "
 				"A for %s\n", domain);
-		if (!resolv.Lookup(domain, Resolver::RR_AAAA, address))
+		if ((!proto || proto == AF_INET6) && !resolv.Lookup(domain, Resolver::RR_AAAA, address))
 			if (debug) fprintf(stderr, "warning: failed to resolve "
 				"AAAA for %s\n", domain);
 
@@ -364,11 +373,11 @@ int main(int argc, char* argv[])
 					"back on A/AAAA record for %s\n",
 					domain);
 
-				if (!resolv.Lookup(domain, Resolver::RR_A,
+				if ((!proto || proto == AF_INET) && !resolv.Lookup(domain, Resolver::RR_A,
 					address))
 					if (debug) fprintf(stderr, "failed to "
 						"resolve A for %s\n", domain);
-				if (!resolv.Lookup(domain, Resolver::RR_AAAA,
+				if ((!proto || proto == AF_INET6) && !resolv.Lookup(domain, Resolver::RR_AAAA,
 					address))
 					if (debug) fprintf(stderr, "failed to "
 						"resolve AAAA for %s\n",
@@ -380,14 +389,14 @@ int main(int argc, char* argv[])
 						i != mx.end(); ++i)
 				{
 					bool ok = false;
-					if (!resolv.Lookup(*i, Resolver::RR_A, address))
+					if ((!proto || proto == AF_INET) && !resolv.Lookup(*i, Resolver::RR_A, address))
 					{
 						if (debug) fprintf(stderr, "warning: failed "
 							"to resolve A for %s\n", i->c_str());
 						else
 							ok = true;
 					}
-					if (!resolv.Lookup(*i, Resolver::RR_AAAA, address))
+					if ((!proto || proto == AF_INET6) && !resolv.Lookup(*i, Resolver::RR_AAAA, address))
 					{
 						if (debug) fprintf(stderr, "warning: failed to "
 							"resolve AAAA for %s\n", i->c_str());
@@ -487,7 +496,7 @@ int main(int argc, char* argv[])
 		struct addrinfo *res = NULL, resTmp;
 
 		memset(&resTmp, 0, sizeof resTmp);
-		resTmp.ai_family = AF_UNSPEC;
+		resTmp.ai_family = proto;
 		resTmp.ai_socktype = SOCK_STREAM;
 		if (getaddrinfo(i->c_str(), smtp_port, &resTmp, &res) != 0)
 		{
