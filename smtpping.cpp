@@ -335,10 +335,10 @@ int main(int argc, char* argv[])
 		const char* domain = argv[1] + 1;
 
 		/* resolve as A/AAAA */
-		if ((!proto || proto == AF_INET) && !resolv.Lookup(domain, Resolver::RR_A, address))
+		if ((proto == AF_UNSPEC || proto == AF_INET) && !resolv.Lookup(domain, Resolver::RR_A, address))
 			if (debug) fprintf(stderr, "warning: failed to resolve "
 				"A for %s\n", domain);
-		if ((!proto || proto == AF_INET6) && !resolv.Lookup(domain, Resolver::RR_AAAA, address))
+		if ((proto == AF_UNSPEC || proto == AF_INET6) && !resolv.Lookup(domain, Resolver::RR_AAAA, address))
 			if (debug) fprintf(stderr, "warning: failed to resolve "
 				"AAAA for %s\n", domain);
 
@@ -373,11 +373,11 @@ int main(int argc, char* argv[])
 					"back on A/AAAA record for %s\n",
 					domain);
 
-				if ((!proto || proto == AF_INET) && !resolv.Lookup(domain, Resolver::RR_A,
+				if ((proto == AF_UNSPEC || proto == AF_INET) && !resolv.Lookup(domain, Resolver::RR_A,
 					address))
 					if (debug) fprintf(stderr, "failed to "
 						"resolve A for %s\n", domain);
-				if ((!proto || proto == AF_INET6) && !resolv.Lookup(domain, Resolver::RR_AAAA,
+				if ((proto == AF_UNSPEC || proto == AF_INET6) && !resolv.Lookup(domain, Resolver::RR_AAAA,
 					address))
 					if (debug) fprintf(stderr, "failed to "
 						"resolve AAAA for %s\n",
@@ -389,14 +389,14 @@ int main(int argc, char* argv[])
 						i != mx.end(); ++i)
 				{
 					bool ok = false;
-					if ((!proto || proto == AF_INET) && !resolv.Lookup(*i, Resolver::RR_A, address))
+					if ((proto == AF_UNSPEC || proto == AF_INET) && !resolv.Lookup(*i, Resolver::RR_A, address))
 					{
 						if (debug) fprintf(stderr, "warning: failed "
 							"to resolve A for %s\n", i->c_str());
 						else
 							ok = true;
 					}
-					if ((!proto || proto == AF_INET6) && !resolv.Lookup(*i, Resolver::RR_AAAA, address))
+					if ((proto == AF_UNSPEC || proto == AF_INET6) && !resolv.Lookup(*i, Resolver::RR_AAAA, address))
 					{
 						if (debug) fprintf(stderr, "warning: failed to "
 							"resolve AAAA for %s\n", i->c_str());
