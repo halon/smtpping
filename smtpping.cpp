@@ -206,7 +206,7 @@ int main(int argc, char* argv[])
 	bool show_rate = false;
 	bool quiet = false;
 	bool safe_mode = false;
-	unsigned int proto = AF_UNSPEC;
+	unsigned int proto = 0;
 
 	/* no arguments: show help */
 	if (argc < 2)
@@ -335,10 +335,10 @@ int main(int argc, char* argv[])
 		const char* domain = argv[1] + 1;
 
 		/* resolve as A/AAAA */
-		if ((proto == AF_UNSPEC || proto == AF_INET) && !resolv.Lookup(domain, Resolver::RR_A, address))
+		if (!resolv.Lookup(domain, Resolver::RR_A, address))
 			if (debug) fprintf(stderr, "warning: failed to resolve "
 				"A for %s\n", domain);
-		if ((proto == AF_UNSPEC || proto == AF_INET6) && !resolv.Lookup(domain, Resolver::RR_AAAA, address))
+		if (!resolv.Lookup(domain, Resolver::RR_AAAA, address))
 			if (debug) fprintf(stderr, "warning: failed to resolve "
 				"AAAA for %s\n", domain);
 
@@ -373,11 +373,11 @@ int main(int argc, char* argv[])
 					"back on A/AAAA record for %s\n",
 					domain);
 
-				if ((proto == AF_UNSPEC || proto == AF_INET) && !resolv.Lookup(domain, Resolver::RR_A,
+				if (!resolv.Lookup(domain, Resolver::RR_A,
 					address))
 					if (debug) fprintf(stderr, "failed to "
 						"resolve A for %s\n", domain);
-				if ((proto == AF_UNSPEC || proto == AF_INET6) && !resolv.Lookup(domain, Resolver::RR_AAAA,
+				if (!resolv.Lookup(domain, Resolver::RR_AAAA,
 					address))
 					if (debug) fprintf(stderr, "failed to "
 						"resolve AAAA for %s\n",
@@ -389,14 +389,14 @@ int main(int argc, char* argv[])
 						i != mx.end(); ++i)
 				{
 					bool ok = false;
-					if ((proto == AF_UNSPEC || proto == AF_INET) && !resolv.Lookup(*i, Resolver::RR_A, address))
+					if (!resolv.Lookup(*i, Resolver::RR_A, address))
 					{
 						if (debug) fprintf(stderr, "warning: failed "
 							"to resolve A for %s\n", i->c_str());
 						else
 							ok = true;
 					}
-					if ((proto == AF_UNSPEC || proto == AF_INET6) && !resolv.Lookup(*i, Resolver::RR_AAAA, address))
+					if (!resolv.Lookup(*i, Resolver::RR_AAAA, address))
 					{
 						if (debug) fprintf(stderr, "warning: failed to "
 							"resolve AAAA for %s\n", i->c_str());
@@ -496,14 +496,18 @@ int main(int argc, char* argv[])
 		struct addrinfo *res = NULL, resTmp;
 
 		memset(&resTmp, 0, sizeof resTmp);
-		resTmp.ai_family = proto;
+		resTmp.ai_family = AF_UNSPEC;
 		resTmp.ai_socktype = SOCK_STREAM;
-		if (getaddrinfo(i->c_str(), smtp_port, &resTmp, &res) != 0)
+		int r = getaddrinfo(i->c_str(), smtp_port, &resTmp, &res);
+		if (r != 0)
 		{
-			fprintf(stderr, "getaddrinfo() failed %s\n",
-				i->c_str());
+			fprintf(stderr, "getaddrinfo() failed %s: %s\n",
+				i->c_str(), gai_strerror(r));
 			continue;
 		}
+
+		if (proto && res->ai_family != proto)
+			continue;
 
 		/* print header */
 		if (!quiet)
