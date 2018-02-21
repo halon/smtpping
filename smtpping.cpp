@@ -426,7 +426,7 @@ int main(int argc, char* argv[])
 #endif
 
 	unsigned int child = 1;
-	if (forks > 1) {
+	if (forks > 0) {
 #ifdef __WIN32__
 		fprintf(stderr, "-P is not supported on this platform\n");
 		return 1;
@@ -454,7 +454,7 @@ int main(int argc, char* argv[])
 		return 0;
 #endif
 	} else if (show_rate) {
-		fprintf(stderr, "-r only works with -P2 or greater\n");
+		fprintf(stderr, "-r only works with -P1 or greater\n");
 		return 1;
 	}
 	spawn:
@@ -713,7 +713,7 @@ reconnect:
 		close(s);
 
 #ifdef SUPPORT_RATE
-		if (forks > 1) {
+		if (show_rate) {
 			sem_wait(sem);
 			(*counter)++;
 			sem_post(sem);
