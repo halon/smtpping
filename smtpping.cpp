@@ -149,7 +149,7 @@ double GetHighResTime()
  */
 void usage(const char* name, FILE* fp, int status)
 {
-	fprintf(fp, 
+	fprintf(fp,
 		"Usage: " APP_NAME " [ARGS] x@y.z [@server]\n"
 		"Where: x@y.z  is the address that will receive e-mail\n"
 		"       server is the address to connect to (optional)\n"
@@ -158,6 +158,7 @@ void usage(const char* name, FILE* fp, int status)
 		"       -d, --debug\tShow more debugging\n"
 		"       -4\t\tUse IPv4\n"
 		"       -6\t\tUse IPv6\n"
+		"       -b, --bind\tBind source address\n"
 		"       -p, --port\tWhich TCP port to use [default: 25]\n"
 		"       -w, --wait\tTime to wait between PINGs [default: 1000]"
 						" (ms)\n"
@@ -194,6 +195,7 @@ int main(int argc, char* argv[])
 #endif
 
 	/* default pareamters */
+	const char *smtp_bind = NULL;
 	const char *smtp_helo = "localhost.localdomain";
 	const char *smtp_from = "";
 	const char *smtp_port = "25";
@@ -225,12 +227,13 @@ int main(int argc, char* argv[])
 		{ "file",	required_argument,	NULL,	'f'	},
 		{ "rate",	required_argument,	NULL,	'r'	},
 		{ "quiet",	required_argument,	NULL,	'q'	},
+		{ "bind",	required_argument,	NULL,	'b'	},
 		{ NULL,		0,			NULL,	0	}
 	}; 
 	opterr = 0;
 	optind = 0;
 	int ch;
-	while ((ch = getopt_long(argc, argv, "H:S:s:hw:c:P:p:df:rqJ46", longopts, NULL)) != -1)
+	while ((ch = getopt_long(argc, argv, "H:S:s:hw:c:P:p:df:rqJ46b:", longopts, NULL)) != -1)
 	{
 		switch(ch)
 		{
@@ -280,6 +283,9 @@ int main(int argc, char* argv[])
 			case '6':
 				proto = AF_INET6;
 				break;
+			case 'b':
+				smtp_bind = optarg;
+				break;
 			default:
 				usage(argv[0], stderr, 2);
 				break;
@@ -306,7 +312,7 @@ int main(int argc, char* argv[])
 		fprintf(stderr, "warning: file %s could not be opened\n"
 				, smtp_file);
 	else
-		data.append(std::istreambuf_iterator<char>(ifs.rdbuf()), 
+		data.append(std::istreambuf_iterator<char>(ifs.rdbuf()),
 				std::istreambuf_iterator<char>());
 	data += ".\r\n";
 	} else {
@@ -488,6 +494,21 @@ int main(int argc, char* argv[])
 #define STATS_SESSION_TIME(name) \
 	(smtp_##name - smtp_connect)
 
+	struct addrinfo *bindIP = NULL, bindIPTmp;
+	if (smtp_bind)
+	{
+		memset(&bindIPTmp, 0, sizeof bindIPTmp);
+		bindIPTmp.ai_family = AF_UNSPEC;
+		bindIPTmp.ai_socktype = SOCK_STREAM;
+		int r = getaddrinfo(smtp_bind, 0, &bindIPTmp, &bindIP);
+		if (r != 0)
+		{
+			fprintf(stderr, "getaddrinfo() failed %s: %s\n",
+					smtp_bind, gai_strerror(r));
+			return 1;
+		}
+	}
+
 	/* connect to the first working address */
 	unsigned int smtp_seq = 0;
 	vector<string>::const_iterator i;
@@ -509,10 +530,13 @@ int main(int argc, char* argv[])
 		if (proto && res->ai_family != proto)
 			continue;
 
+		if (bindIP && bindIP->ai_family != res->ai_family)
+			continue;
+
 		/* print header */
 		if (!quiet)
-		printf("PING %s ([%s]:%s): %d bytes (SMTP DATA)\n", 
-			smtp_rcpt, i->c_str(), smtp_port, 
+		printf("PING %s ([%s]:%s): %d bytes (SMTP DATA)\n",
+			smtp_rcpt, i->c_str(), smtp_port,
 			(unsigned int)data.size());
 reconnect:
 
@@ -540,7 +564,19 @@ reconnect:
 			res->ai_protocol);
 		if (s == -1)
 		{
-			fprintf(stderr, "seq=%u: socket() failed\n", 
+			fprintf(stderr, "seq=%u: socket() failed\n",
+				smtp_seq);
+			if (smtp_seq == 0) {
+				freeaddrinfo(res);
+				continue;
+			} else {
+				goto reconnect;
+			}
+		}
+
+		if (bindIP && bind(s, bindIP->ai_addr, bindIP->ai_addrlen) != 0)
+		{
+			fprintf(stderr, "seq=%u: bind() failed\n",
 				smtp_seq);
 			if (smtp_seq == 0) {
 				freeaddrinfo(res);
