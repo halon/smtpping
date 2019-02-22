@@ -39,6 +39,7 @@ using std::vector;
 #include <winbase.h>
 #else
 #include <sys/socket.h>
+#include <arpa/inet.h>
 #include <netdb.h>
 #include <sys/wait.h>
 #include <errno.h>
@@ -340,17 +341,22 @@ int main(int argc, char* argv[])
 		/* jmp past '@' */
 		const char* domain = argv[1] + 1;
 
-		/* resolve as A/AAAA */
-		if (!resolv.Lookup(domain, Resolver::RR_A, address))
-			if (debug) fprintf(stderr, "warning: failed to resolve "
-				"A for %s\n", domain);
-		if (!resolv.Lookup(domain, Resolver::RR_AAAA, address))
-			if (debug) fprintf(stderr, "warning: failed to resolve "
-				"AAAA for %s\n", domain);
-
-		/* could not resolve, try to use address */
-		if (address.empty())
+		char buf[sizeof(struct in6_addr)];
+		if (inet_pton(AF_INET, domain, &buf) == 1 || inet_pton(AF_INET6, domain, &buf) == 1)
 			address.push_back(domain);
+		else
+		{
+			/* resolve as A/AAAA */
+			if (!resolv.Lookup(domain, Resolver::RR_A, address))
+				if (debug) fprintf(stderr, "warning: failed to resolve "
+						"A for %s\n", domain);
+			if (!resolv.Lookup(domain, Resolver::RR_AAAA, address))
+				if (debug) fprintf(stderr, "warning: failed to resolve "
+						"AAAA for %s\n", domain);
+			/* could not resolve, try to use address */
+			if (address.empty())
+				address.push_back(domain);
+		}
 	} else
 	{
 		/* use mailaddress as mx */
