@@ -75,7 +75,7 @@ void abort(int)
  * SMTPReadLine: read a smtp line and return status code
  *               return false on disconnect
  */
-bool SMTPReadLine(int s, std::string& ret)
+bool SMTPReadLine(int s, size_t& ret)
 {
 #ifdef __WIN32__
 #define MSG_NOSIGNAL 0
@@ -93,7 +93,7 @@ bool SMTPReadLine(int s, std::string& ret)
 			/* support multi-line responses */
 			if (cmd.size() > 4 && cmd[3] == ' ')
 			{
-				ret = cmd.substr(0, 3);
+				ret = strtoul(cmd.substr(0, 3).c_str(), NULL, 10);
 				return true;
 			} else
 				cmd.clear();
@@ -621,11 +621,12 @@ reconnect:
 		/*
 		 * < SMTP Banner
 		 */
-		string ret, cmd;
-		if (!SMTPReadLine(s, ret) || ret != "220")
+		string cmd;
+		size_t ret;
+		if (!SMTPReadLine(s, ret) || ret / 100 != 2)
 		{
-			fprintf(stderr, "seq=%u: recv: BANNER failed (%s)\n",
-				smtp_seq, ret.c_str());
+			fprintf(stderr, "seq=%u: recv: BANNER failed (%zu)\n",
+				smtp_seq, ret);
 			close(s);
 			goto reconnect; 
 		}
@@ -642,10 +643,10 @@ reconnect:
 			close(s);
 			goto reconnect; 
 		}
-		if (!SMTPReadLine(s, ret) || ret != "250")
+		if (!SMTPReadLine(s, ret) || ret / 100 != 2)
 		{
-			fprintf(stderr, "seq=%u: recv: HELO failed (%s)\n",
-				smtp_seq, ret.c_str());
+			fprintf(stderr, "seq=%u: recv: HELO failed (%zu)\n",
+				smtp_seq, ret);
 			close(s);
 			goto reconnect; 
 		}
@@ -662,10 +663,10 @@ reconnect:
 			close(s);
 			goto reconnect; 
 		}
-		if (!SMTPReadLine(s, ret) || ret != "250")
+		if (!SMTPReadLine(s, ret) || ret / 100 != 2)
 		{
-			fprintf(stderr, "seq=%u: recv: MAIL FROM failed (%s)\n",
-				smtp_seq, ret.c_str());
+			fprintf(stderr, "seq=%u: recv: MAIL FROM failed (%zu)\n",
+				smtp_seq, ret);
 			close(s);
 			goto reconnect; 
 		}
@@ -682,10 +683,10 @@ reconnect:
 			close(s);
 			goto reconnect; 
 		}
-		if (!SMTPReadLine(s, ret) || ret != "250")
+		if (!SMTPReadLine(s, ret) || ret / 100 != 2)
 		{
-			fprintf(stderr, "seq=%u: recv: RCPT TO failed (%s)\n",
-				smtp_seq, ret.c_str());
+			fprintf(stderr, "seq=%u: recv: RCPT TO failed (%zu)\n",
+				smtp_seq, ret);
 			close(s);
 			goto reconnect; 
 		}
@@ -702,10 +703,10 @@ reconnect:
 			close(s);
 			goto reconnect; 
 		}
-		if (!SMTPReadLine(s, ret) || ret != "354")
+		if (!SMTPReadLine(s, ret) || ret / 100 != 3)
 		{
-			fprintf(stderr, "seq=%u: recv: DATA failed (%s)\n",
-				smtp_seq, ret.c_str());
+			fprintf(stderr, "seq=%u: recv: DATA failed (%zu)\n",
+				smtp_seq, ret);
 			close(s);
 			goto reconnect; 
 		}
@@ -723,8 +724,8 @@ reconnect:
 		}
 		if (!SMTPReadLine(s, ret))
 		{
-			fprintf(stderr, "seq=%u: recv: EOM failed (%s)\n",
-				smtp_seq, ret.c_str());
+			fprintf(stderr, "seq=%u: recv: EOM failed (%zu)\n",
+				smtp_seq, ret);
 			close(s);
 			goto reconnect; 
 		}
@@ -744,8 +745,8 @@ reconnect:
 		}
 		if (!SMTPReadLine(s, ret))
 		{
-			fprintf(stderr, "seq=%u: recv: QUIT failed (%s)\n",
-				smtp_seq, ret.c_str());
+			fprintf(stderr, "seq=%u: recv: QUIT failed (%zu)\n",
+				smtp_seq, ret);
 			close(s);
 			goto reconnect; 
 		}
