@@ -178,7 +178,7 @@ void usage(const char* name, FILE* fp, int status)
 		"the recipient domain's\n  MX record, falling back on A/AAAA "
 		"records.\n"
 		"\n"
-		"  " APP_NAME " " APP_VERSION " built on " __DATE__ 
+		"  " APP_NAME " " APP_VERSION " built on " __DATE__
 		" (c) Halon Security <support@halon.se>\n"
 		);
 	exit(status);
@@ -226,11 +226,11 @@ int main(int argc, char* argv[])
 		{ "size",	required_argument,	NULL,	's'	},
 		{ "port",	required_argument,	NULL,	'p'	},
 		{ "file",	required_argument,	NULL,	'f'	},
-		{ "rate",	required_argument,	NULL,	'r'	},
-		{ "quiet",	required_argument,	NULL,	'q'	},
+		{ "rate",	no_argument,	NULL,	'r'	},
+		{ "quiet",	no_argument,	NULL,	'q'	},
 		{ "bind",	required_argument,	NULL,	'b'	},
 		{ NULL,		0,			NULL,	0	}
-	}; 
+	};
 	opterr = 0;
 	optind = 0;
 	int ch;
@@ -397,7 +397,7 @@ int main(int argc, char* argv[])
 			} else
 			{
 				/* resolve all mx */
-				for(vector<string>::const_iterator i = mx.begin(); 
+				for(vector<string>::const_iterator i = mx.begin();
 						i != mx.end(); ++i)
 				{
 					bool ok = false;
@@ -415,7 +415,7 @@ int main(int argc, char* argv[])
 						else
 							ok = true;
 					}
-					/* could not reslove as either A or AAAA: 
+					/* could not reslove as either A or AAAA:
 					   maybe it's an IP */
 					if (!ok)
 						address.push_back(*i);
@@ -609,7 +609,7 @@ reconnect:
 				continue;
 			} else {
 				close(s);
-				goto reconnect; 
+				goto reconnect;
 			}
 		}
 		STATS(connect, init);
@@ -628,7 +628,7 @@ reconnect:
 			fprintf(stderr, "seq=%u: recv: BANNER failed (%zu)\n",
 				smtp_seq, ret);
 			close(s);
-			goto reconnect; 
+			goto reconnect;
 		}
 		STATS(banner, connect);
 
@@ -641,14 +641,14 @@ reconnect:
 		{
 			fprintf(stderr, "seq=%u: send: failed\n", smtp_seq);
 			close(s);
-			goto reconnect; 
+			goto reconnect;
 		}
 		if (!SMTPReadLine(s, ret) || ret / 100 != 2)
 		{
 			fprintf(stderr, "seq=%u: recv: HELO failed (%zu)\n",
 				smtp_seq, ret);
 			close(s);
-			goto reconnect; 
+			goto reconnect;
 		}
 		STATS(helo, connect);
 
@@ -661,14 +661,14 @@ reconnect:
 		{
 			fprintf(stderr, "seq=%u: send: failed\n", smtp_seq);
 			close(s);
-			goto reconnect; 
+			goto reconnect;
 		}
 		if (!SMTPReadLine(s, ret) || ret / 100 != 2)
 		{
 			fprintf(stderr, "seq=%u: recv: MAIL FROM failed (%zu)\n",
 				smtp_seq, ret);
 			close(s);
-			goto reconnect; 
+			goto reconnect;
 		}
 		STATS(mailfrom, connect);
 
@@ -720,14 +720,14 @@ reconnect:
 		{
 			fprintf(stderr, "seq=%u: send: failed\n", smtp_seq);
 			close(s);
-			goto reconnect; 
+			goto reconnect;
 		}
 		if (!SMTPReadLine(s, ret))
 		{
 			fprintf(stderr, "seq=%u: recv: EOM failed (%zu)\n",
 				smtp_seq, ret);
 			close(s);
-			goto reconnect; 
+			goto reconnect;
 		}
 		STATS(datasent, connect);
 
@@ -741,14 +741,14 @@ reconnect:
 			fprintf(stderr, "seq=%u: send: QUIT failed\n",
 				smtp_seq);
 			close(s);
-			goto reconnect; 
+			goto reconnect;
 		}
 		if (!SMTPReadLine(s, ret))
 		{
 			fprintf(stderr, "seq=%u: recv: QUIT failed (%zu)\n",
 				smtp_seq, ret);
 			close(s);
-			goto reconnect; 
+			goto reconnect;
 		}
 		STATS(quit, connect);
 
@@ -804,7 +804,7 @@ reconnect:
 		SHOWSTAT(quit);
 	} else
 	{
-		printf("\n--- no pings were sent ---\n");    
+		printf("\n--- no pings were sent ---\n");
 	}
 
 #ifdef __WIN32__
