@@ -210,13 +210,14 @@ int main(int argc, char* argv[])
 	bool quiet = false;
 	bool safe_mode = false;
 	unsigned int proto = 0;
+	bool chunking = false;
 
 	/* no arguments: show help */
 	if (argc < 2)
 		usage(argv[0], stderr, 2);
 
 	/* getopts/longopts */
-	static struct option longopts[] = { 
+	static struct option longopts[] = {
 		{ "help",	no_argument,		NULL,	'h'	},
 		{ "helo",	required_argument,	NULL,	'H'	},
 		{ "sender",	required_argument,	NULL,	'S'	},
@@ -229,12 +230,13 @@ int main(int argc, char* argv[])
 		{ "rate",	no_argument,	NULL,	'r'	},
 		{ "quiet",	no_argument,	NULL,	'q'	},
 		{ "bind",	required_argument,	NULL,	'b'	},
+		{ "chunking",	no_argument,	NULL,	'C'	},
 		{ NULL,		0,			NULL,	0	}
 	};
 	opterr = 0;
 	optind = 0;
 	int ch;
-	while ((ch = getopt_long(argc, argv, "H:S:s:hw:c:P:p:df:rqJ46b:", longopts, NULL)) != -1)
+	while ((ch = getopt_long(argc, argv, "H:S:s:hw:c:P:p:df:rqJ46b:C", longopts, NULL)) != -1)
 	{
 		switch(ch)
 		{
@@ -287,6 +289,9 @@ int main(int argc, char* argv[])
 			case 'b':
 				smtp_bind = optarg;
 				break;
+			case 'C':
+				chunking = true;
+				break;
 			default:
 				usage(argv[0], stderr, 2);
 				break;
@@ -315,7 +320,7 @@ int main(int argc, char* argv[])
 	else
 		data.append(std::istreambuf_iterator<char>(ifs.rdbuf()),
 				std::istreambuf_iterator<char>());
-	data += ".\r\n";
+	if (!chunking) data += ".\r\n";
 	} else {
 	/* generate message with approximatly size */
 	data += "Subject: SMTP Ping\r\n";
@@ -326,8 +331,9 @@ int main(int argc, char* argv[])
 	while (data.size() / 1024 < smtp_data_size)
 		data += "AABBCCDDEEFFGGHHIIJJKKLLMMNNOOPPQQRRSSTTUUVVWWXXYYZZ"
 				"00112233445566778899\r\n";
-	data += "\r\n.\r\n";
+	if (!chunking) data += "\r\n.\r\n";
 	}
+	if (chunking) data = "BDAT " + std::to_string(data.size()) + " LAST\r\n" + data;
 
 	Resolver resolv;
 	vector<string> address;
@@ -681,34 +687,37 @@ reconnect:
 		{
 			fprintf(stderr, "seq=%u: send: failed\n", smtp_seq);
 			close(s);
-			goto reconnect; 
+			goto reconnect;
 		}
 		if (!SMTPReadLine(s, ret) || ret / 100 != 2)
 		{
 			fprintf(stderr, "seq=%u: recv: RCPT TO failed (%zu)\n",
 				smtp_seq, ret);
 			close(s);
-			goto reconnect; 
+			goto reconnect;
 		}
 		STATS(rcptto, connect);
 
-		/*
-		 * > DATA
-		 * < 354 Feed me
-		 */
-		cmd = string("DATA\r\n");
-		if (send(s, cmd.c_str(), cmd.size(), 0) != (int)cmd.size())
+		if (!chunking)
 		{
-			fprintf(stderr, "seq=%u: send: failed\n", smtp_seq);
-			close(s);
-			goto reconnect; 
-		}
-		if (!SMTPReadLine(s, ret) || ret / 100 != 3)
-		{
-			fprintf(stderr, "seq=%u: recv: DATA failed (%zu)\n",
-				smtp_seq, ret);
-			close(s);
-			goto reconnect; 
+			/*
+			 * > DATA
+			 * < 354 Feed me
+			 */
+			cmd = string("DATA\r\n");
+			if (send(s, cmd.c_str(), cmd.size(), 0) != (int)cmd.size())
+			{
+				fprintf(stderr, "seq=%u: send: failed\n", smtp_seq);
+				close(s);
+				goto reconnect;
+			}
+			if (!SMTPReadLine(s, ret) || ret / 100 != 3)
+			{
+				fprintf(stderr, "seq=%u: recv: DATA failed (%zu)\n",
+					smtp_seq, ret);
+				close(s);
+				goto reconnect;
+			}
 		}
 		STATS(data, connect);
 

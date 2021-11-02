@@ -22,7 +22,7 @@
 .Nd SMTP benchmarking and measurement tool
 .Sh SYNOPSIS
 .Nm
-.Op Fl dqrJ46
+.Op Fl dqrJ46C
 .Op Fl p Ar port
 .Op Fl w Ar wait
 .Op Fl c Ar count
@@ -80,6 +80,8 @@ option.
 HELO name (default: localhost.localdomain).
 .It Fl S Ar sender
 Sender address (default: <>).
+.It Fl C
+Use CHUNKING (BDAT)
 .It Fl r
 Display rate instead of transaction delays. To measure throughput,
 it's recommended to use
