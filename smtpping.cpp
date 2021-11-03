@@ -459,7 +459,7 @@ int main(int argc, char* argv[])
 #ifdef SUPPORT_RATE
 		while (show_rate && !abort_ping) {
 			sem_wait(sem);
-			printf("%zu/s\n", *counter);
+			printf("%zu\n", *counter);
 			*counter = 0;
 			sem_post(sem);
 			sleep(1);
