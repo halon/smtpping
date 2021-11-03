@@ -156,6 +156,7 @@ void usage(const char* name, FILE* fp, int status)
 		"       server is the address to connect to (optional)\n"
 		"       ARGS   is one or many of: (optional)\n"
 		"       -h, --help\tShow this help message\n"
+		"       -v, --version\tShow version\n"
 		"       -d, --debug\tShow more debugging\n"
 		"       -4\t\tUse IPv4\n"
 		"       -6\t\tUse IPv6\n"
@@ -220,6 +221,7 @@ int main(int argc, char* argv[])
 	/* getopts/longopts */
 	static struct option longopts[] = {
 		{ "help",	no_argument,		NULL,	'h'	},
+		{ "version",	no_argument,		NULL,	'v'	},
 		{ "helo",	required_argument,	NULL,	'H'	},
 		{ "sender",	required_argument,	NULL,	'S'	},
 		{ "count",	required_argument,	NULL,	'c'	},
@@ -237,7 +239,7 @@ int main(int argc, char* argv[])
 	opterr = 0;
 	optind = 0;
 	int ch;
-	while ((ch = getopt_long(argc, argv, "H:S:s:hw:c:P:p:df:rqJ46b:C", longopts, NULL)) != -1)
+	while ((ch = getopt_long(argc, argv, "H:S:s:hw:c:P:p:df:rqJ46b:Cv", longopts, NULL)) != -1)
 	{
 		switch(ch)
 		{
@@ -292,6 +294,10 @@ int main(int argc, char* argv[])
 				break;
 			case 'C':
 				chunking = true;
+				break;
+			case 'v':
+				printf("%s\n", APP_VERSION);
+				exit(0);
 				break;
 			default:
 				usage(argv[0], stderr, 2);
