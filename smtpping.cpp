@@ -58,7 +58,7 @@ using std::vector;
  */
 bool debug = false;
 
-#define APP_VERSION "1.1.3"
+#define APP_VERSION "1.1.4"
 #define APP_NAME "smtpping"
 
 /*
