@@ -170,6 +170,7 @@ void usage(const char* name, FILE* fp, int status)
 		"       -f, --file\tSend message file (RFC 822)\n"
 		"       -H, --helo\tHELO domain [default: localhost.localdomain]\n"
 		"       -S, --sender\tSender address [default: empty]\n"
+		"       -C, --chunking\tUse CHUNKING (BDAT)\n"
 		"       -r, --rate\tShow message rate per second\n"
 		"       -q, --quiet\tShow less output\n"
 		"       -J\t\tRun in jailed mode (forbid --file)\n"
