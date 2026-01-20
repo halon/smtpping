@@ -45,7 +45,11 @@ using std::vector;
 #include <errno.h>
 #include <semaphore.h>
 #include <sys/mman.h>
-#if _POSIX_SEMAPHORES && MAP_ANONYMOUS
+#ifdef __APPLE__
+// use supported GCD semaphores instead of unsupported POSIX semaphores
+#include <dispatch/dispatch.h>
+#endif
+#if (_POSIX_SEMAPHORES && MAP_ANONYMOUS) || __APPLE__
 #define SUPPORT_RATE
 #endif
 #endif
@@ -441,14 +445,19 @@ int main(int argc, char* argv[])
 	}
 
 #ifdef SUPPORT_RATE
+#ifdef __APPLE__
+	dispatch_semaphore_t    sem;
+	sem = dispatch_semaphore_create(1);
+#else
 	sem_t* sem = (sem_t*)mmap(NULL, sizeof(sem_t), PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
-	size_t* counter = (size_t*)mmap(NULL, sizeof(size_t), PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
 	if (sem == MAP_FAILED || counter == MAP_FAILED) {
 		fprintf(stderr, "mmap: failed\n");
 		return 1;
 	}
 	if (sem_init(sem, 1, 1) != 0)
-		fprintf(stderr, "sem_init: failed\n");
+		perror("sem_init");
+#endif
+	size_t* counter = (size_t*)mmap(NULL, sizeof(size_t), PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
 	*counter = 0;
 #else
 	if (show_rate) {
@@ -473,10 +482,18 @@ int main(int argc, char* argv[])
 		}
 #ifdef SUPPORT_RATE
 		while (show_rate && !abort_ping) {
+#ifdef __APPLE__
+			dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
+#else
 			sem_wait(sem);
+#endif
 			printf("%zu\n", *counter);
 			*counter = 0;
+#ifdef __APPLE__
+			dispatch_semaphore_signal(sem);
+#else
 			sem_post(sem);
+#endif
 			sleep(1);
 		}
 #endif
@@ -782,9 +799,17 @@ reconnect:
 
 #ifdef SUPPORT_RATE
 		if (show_rate) {
+#ifdef __APPLE__
+			dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
+#else
 			sem_wait(sem);
+#endif
 			(*counter)++;
+#ifdef __APPLE__
+			dispatch_semaphore_signal(sem);
+#else
 			sem_post(sem);
+#endif
 		}
 #endif
 
