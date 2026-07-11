@@ -65,7 +65,7 @@ bool debug = false;
  * Signal Handlers (abort ping and show statistics)
  */
 bool abort_ping = false;
-void abort(int)
+void sigint_handler(int)
 {
 	abort_ping = true;
 	signal(SIGINT, SIG_DFL);
@@ -189,7 +189,7 @@ void usage(const char* name, FILE* fp, int status)
 int main(int argc, char* argv[])
 {
 	/* register signal handlers */
-	signal(SIGINT, abort);
+	signal(SIGINT, sigint_handler);
 
 #ifdef __WIN32__
 	/* initialize winsock */
