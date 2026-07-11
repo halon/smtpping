@@ -59,7 +59,9 @@ class Resolver
 
 		bool Lookup(const std::string& domain, RecordType recordType, std::vector<std::string>& result);
 		int GetLastError() const {
-#ifndef __WIN32__
+#ifdef __WIN32__
+			return -1;
+#else
 			return m_res.res_h_errno;
 #endif
 		}
