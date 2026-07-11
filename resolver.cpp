@@ -177,6 +177,10 @@ bool Resolver::Lookup(const std::string& domain, RecordType recordType, std::vec
 		return false;
 	}
 
+	/* a valid response must at least contain the fixed header */
+	if (len < HFIXEDSZ)
+		return false;
+
 	header = (HEADER*)&response;
 	resData = (unsigned char*)&response + HFIXEDSZ;
 	resEnd  = (unsigned char*)&response + len;
@@ -188,27 +192,47 @@ bool Resolver::Lookup(const std::string& domain, RecordType recordType, std::vec
 		if ((len = dn_skipname(resData, resEnd)) < 0)
 			return false;
 
-		resData += len + QFIXEDSZ;
+		resData += len;
+		/* each question is followed by QTYPE + QCLASS */
+		if (resData + QFIXEDSZ > resEnd)
+			return false;
+		resData += QFIXEDSZ;
 	}
 
 	char buf[MAXDNAME + 1];
 	for (int i = 0; i < answer_count; i++) {
 		len = dn_expand((unsigned char*)&response, resEnd, resData, (char*)&buf, sizeof buf - 1);
-		if (len < 0) 
+		if (len < 0)
 			return false;
 
 		resData += len;
+
+		/* fixed RR header: TYPE(2) + CLASS(2) + TTL(4) + RDLENGTH(2) */
+		if (resData + 3 * INT16SZ + INT32SZ > resEnd)
+			return false;
 
 		GETSHORT(rec_type, resData);
 		resData += INT16SZ + INT32SZ;
 
 		GETSHORT(rec_len, resData);
 
+		/* the record data must lie within the response buffer */
+		if (rec_len > resEnd - resData)
+			return false;
+
+		/* parse rdata through a separate cursor so that advancing
+		   resData below always uses the untouched RDLENGTH */
+		unsigned char* rdata = resData;
+		unsigned short rdata_len = rec_len;
+
 		switch(rec_type)
 		{
 			case T_MX:
-				GETSHORT(rec_pref, resData);
-				rec_len -= sizeof(short);
+				/* MX rdata is PREFERENCE(2) + exchange name */
+				if (rdata_len < INT16SZ)
+					return false;
+				GETSHORT(rec_pref, rdata);
+				rdata_len -= INT16SZ;
 				break;
 			default:
 				rec_pref = 0;
@@ -219,31 +243,32 @@ bool Resolver::Lookup(const std::string& domain, RecordType recordType, std::vec
 			switch(rec_type)
 			{
 				case T_A:
+					if (rdata_len >= sizeof(struct in_addr))
 					{
-						char buf[INET_ADDRSTRLEN];
+						char abuf[INET_ADDRSTRLEN];
 						if (inet_ntop(AF_INET,
-									(const struct sockaddr_in*)resData, buf, INET_ADDRSTRLEN)) {
-							prioMap[rec_pref].push_back(buf);
+									rdata, abuf, sizeof abuf)) {
+							prioMap[rec_pref].push_back(abuf);
 						}
 					}
 					break;
 				case T_AAAA:
+					if (rdata_len >= sizeof(struct in6_addr))
 					{
-						char buf[INET6_ADDRSTRLEN];
+						char abuf[INET6_ADDRSTRLEN];
 						if (inet_ntop(AF_INET6,
-									(const struct sockaddr_in6*)resData, buf, INET6_ADDRSTRLEN)) {
-							prioMap[rec_pref].push_back(buf);
+									rdata, abuf, sizeof abuf)) {
+							prioMap[rec_pref].push_back(abuf);
 						}
 					}
 					break;
 				case T_MX:
 					{
-						char buf[MAXDNAME + 1];
-						len = dn_expand((unsigned char*)&response, resEnd, resData, (char*)&buf, sizeof buf - 1);
-						if (len < 0) 
+						char mbuf[MAXDNAME + 1];
+						if (dn_expand((unsigned char*)&response, resEnd, rdata, (char*)&mbuf, sizeof mbuf - 1) < 0)
 							return false;
 
-						prioMap[rec_pref].push_back(buf);
+						prioMap[rec_pref].push_back(mbuf);
 					}
 					break;
 			}
