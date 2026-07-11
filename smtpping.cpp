@@ -85,18 +85,21 @@ bool SMTPReadLine(int s, size_t& ret)
 	int r;
 	do {
 		r = recv(s, buf, sizeof buf, MSG_NOSIGNAL);
-		if (r > 0) cmd += buf[0];
-		if (buf[0] == '\n')
+		if (r > 0)
 		{
-			if (debug)
-				fprintf(stderr, "response %s", cmd.c_str());
-			/* support multi-line responses */
-			if (cmd.size() > 4 && cmd[3] == ' ')
+			cmd += buf[0];
+			if (buf[0] == '\n')
 			{
-				ret = strtoul(cmd.substr(0, 3).c_str(), NULL, 10);
-				return true;
-			} else
-				cmd.clear();
+				if (debug)
+					fprintf(stderr, "response %s", cmd.c_str());
+				/* support multi-line responses */
+				if (cmd.size() > 4 && cmd[3] == ' ')
+				{
+					ret = strtoul(cmd.substr(0, 3).c_str(), NULL, 10);
+					return true;
+				} else
+					cmd.clear();
+			}
 		}
 	} while(r > 0);
 	return false;
@@ -635,7 +638,7 @@ reconnect:
 		 * < SMTP Banner
 		 */
 		string cmd;
-		size_t ret;
+		size_t ret = 0;
 		if (!SMTPReadLine(s, ret) || ret / 100 != 2)
 		{
 			fprintf(stderr, "seq=%u: recv: BANNER failed (%zu)\n",
