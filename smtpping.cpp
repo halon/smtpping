@@ -439,9 +439,13 @@ int main(int argc, char* argv[])
 
 #ifdef SUPPORT_RATE
 	sem_t* sem = (sem_t*)mmap(NULL, sizeof(sem_t), PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+	size_t* counter = (size_t*)mmap(NULL, sizeof(size_t), PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+	if (sem == MAP_FAILED || counter == MAP_FAILED) {
+		fprintf(stderr, "mmap: failed\n");
+		return 1;
+	}
 	if (sem_init(sem, 1, 1) != 0)
 		fprintf(stderr, "sem_init: failed\n");
-	size_t* counter = (size_t*)mmap(NULL, sizeof(size_t), PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
 	*counter = 0;
 #else
 	if (show_rate) {
@@ -461,6 +465,8 @@ int main(int argc, char* argv[])
 			pid = fork();
 			if (pid == 0)
 				goto spawn;
+			if (pid < 0)
+				fprintf(stderr, "fork() failed\n");
 		}
 #ifdef SUPPORT_RATE
 		while (show_rate && !abort_ping) {
