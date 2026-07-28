@@ -448,16 +448,25 @@ int main(int argc, char* argv[])
 #ifdef __APPLE__
 	dispatch_semaphore_t    sem;
 	sem = dispatch_semaphore_create(1);
+	if (!sem) {
+		fprintf(stderr, "dispatch_semaphore_create: failed\n");
+	}
 #else
 	sem_t* sem = (sem_t*)mmap(NULL, sizeof(sem_t), PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
-	if (sem == MAP_FAILED || counter == MAP_FAILED) {
-		fprintf(stderr, "mmap: failed\n");
+	if (sem == MAP_FAILED) {
+		perror("mmap(sem)");
 		return 1;
 	}
-	if (sem_init(sem, 1, 1) != 0)
+	if (sem_init(sem, 1, 1) != 0) {
 		perror("sem_init");
+                return 1;
+        }
 #endif
 	size_t* counter = (size_t*)mmap(NULL, sizeof(size_t), PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+	if (counter == MAP_FAILED) {
+		perror("mmap(counter)");
+		return 1;
+        }
 	*counter = 0;
 #else
 	if (show_rate) {
