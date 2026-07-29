@@ -214,7 +214,7 @@ int main(int argc, char* argv[])
 	bool show_rate = false;
 	bool quiet = false;
 	bool safe_mode = false;
-	unsigned int proto = 0;
+	int proto = 0;
 	bool chunking = false;
 
 	/* no arguments: show help */
